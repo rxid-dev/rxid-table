@@ -1,5 +1,6 @@
 import React, { Fragment } from "react";
 import "./App.css";
+import posts from "./posts.json";
 import { RxidTable, useTable } from "./rxid-table";
 
 function App() {
@@ -39,6 +40,20 @@ function App() {
       color: "Red",
     },
   ];
+
+  const postModel = useTable({
+    columns: [
+      {
+        header: "Judul",
+        field: "title",
+      },
+      {
+        header: "Artikel",
+        field: "body",
+      },
+    ],
+    records: posts,
+  });
 
   const model = useTable({
     columns: [
@@ -121,6 +136,9 @@ function App() {
       <div className="container py-4">
         <h1>React Table Tutorial</h1>
         <h4>Create reusable table component on react app</h4>
+        <RxidTable model={postModel} />
+        <br />
+        <br />
         <RxidTable model={model} actions={userAction} />
         <br />
         <br />
