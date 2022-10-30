@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./RxidTable.css";
 
-export const RxidTable = ({ model }) => {
+export const RxidTable = ({ model, stringUrl }) => {
   const [state, setState] = useState({
     records: [],
     keywords: "",
@@ -11,14 +11,38 @@ export const RxidTable = ({ model }) => {
   });
 
   useEffect(() => {
-    let records = Array.from(model.records);
-    records = searchRecords(records);
-    records = sortRecords(records);
-    records = records.splice(0, state.perPage);
-    setState((state) => ({
-      ...state,
-      records,
-    }));
+    if (stringUrl) {
+      let queryParams = `?&_start=${0}&_limit=${state.perPage}`;
+
+      if (state.keywords) {
+        queryParams += `&q=${state.keywords}`;
+      }
+
+      if (state.sortField) {
+        queryParams += `&_sort=${state.sortField}&_order=${state.sortOrder}`;
+      }
+
+      fetch(stringUrl + queryParams)
+        .then(async (successResponse) => {
+          const records = await successResponse.json();
+          setState((state) => ({
+            ...state,
+            records,
+          }));
+        })
+        .catch((errorResponse) => {
+          console.log(errorResponse);
+        });
+    } else {
+      let records = Array.from(model.records);
+      records = searchRecords(records);
+      records = sortRecords(records);
+      records = records.splice(0, state.perPage);
+      setState((state) => ({
+        ...state,
+        records,
+      }));
+    }
   }, [state.keywords, state.perPage, state.sortField, state.sortOrder]);
 
   const searchRecords = (records) => {
