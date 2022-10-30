@@ -3,30 +3,6 @@ import "./App.css";
 import { RxidTable, useTable } from "./rxid-table";
 
 function App() {
-  const users = [
-    {
-      id: 1,
-      name: "John Doe",
-      email: "johndoe@gmail.com",
-      phoneNumber: "+62 812 3456 7890",
-      address: "Pluto",
-    },
-    {
-      id: 2,
-      name: "Jane Doe",
-      email: "jane@gmail.com",
-      phoneNumber: "+62 812 3456 6543",
-      address: "Jupiter",
-    },
-    {
-      id: 3,
-      name: "James Smith",
-      email: "jamessmit@gmail.com",
-      phoneNumber: "+62 812 3456 4488",
-      address: "Earth",
-    },
-  ];
-
   const cars = [
     {
       id: 1,
