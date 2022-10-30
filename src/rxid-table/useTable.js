@@ -1,9 +1,10 @@
 import { useState } from "react";
 
-export const useTable = ({ columns, records }) => {
+export const useTable = ({ columns, records, perPage }) => {
   const [state, setState] = useState({
     columns: columns || [],
     records: records || [],
+    perPage: perPage || 10,
   });
 
   const setRecords = (records) => {
