@@ -60,6 +60,7 @@ function App() {
       {
         header: "Name",
         field: "name",
+        sortable: false,
       },
       {
         header: "Email",
@@ -68,6 +69,7 @@ function App() {
       {
         header: "Phone Number",
         field: "phoneNumber",
+        sortable: false,
       },
       {
         header: "Address",

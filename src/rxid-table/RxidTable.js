@@ -6,17 +6,20 @@ export const RxidTable = ({ model }) => {
     records: [],
     keywords: "",
     perPage: model.perPage,
+    sortField: "",
+    sortOrder: "",
   });
 
   useEffect(() => {
     let records = Array.from(model.records);
     records = searchRecords(records);
+    records = sortRecords(records);
     records = records.splice(0, state.perPage);
     setState((state) => ({
       ...state,
       records,
     }));
-  }, [state.keywords, state.perPage]);
+  }, [state.keywords, state.perPage, state.sortField, state.sortOrder]);
 
   const searchRecords = (records) => {
     if (!state.keywords) return records;
@@ -33,10 +36,44 @@ export const RxidTable = ({ model }) => {
     });
   };
 
+  const sortRecords = (records) => {
+    if (!state.sortField) return records;
+    return records.sort((recordA, recordB) => {
+      const valueA = recordA[state.sortField] || "";
+      const valueB = recordB[state.sortField] || "";
+      return valueA > valueB
+        ? state.sortOrder === "desc"
+          ? -1
+          : +1
+        : state.sortOrder === "desc"
+        ? +1
+        : -1;
+    });
+  };
+
   const handleSearch = (keywords) => {
     setState((state) => ({
       ...state,
       keywords,
+    }));
+  };
+
+  const handleSort = (column) => {
+    if (column.sortable === false) return;
+    const { field } = column;
+    const sortOrder = state.sortOrder
+      ? field === state.sortField
+        ? state.sortOrder === "asc"
+          ? "desc"
+          : ""
+        : "asc"
+      : "asc";
+
+    const sortField = sortOrder === "" ? "" : column.field;
+    setState((state) => ({
+      ...state,
+      sortOrder,
+      sortField,
     }));
   };
 
@@ -76,12 +113,27 @@ export const RxidTable = ({ model }) => {
                 </th>
                 {model.columns.map((column, index) => {
                   return (
-                    <th className="sortable" key={index}>
+                    <th
+                      className={column.sortable === false ? "" : "sortable"}
+                      key={index}
+                      onClick={() => handleSort(column)}
+                    >
                       <div className="th-content">
                         <span className="th-text">{column.header}</span>
-                        <span className="sort">
-                          <em className="fas fa-sort"></em>
-                        </span>
+                        {column.sortable === false ? (
+                          ""
+                        ) : (
+                          <span
+                            className={
+                              "sort " +
+                              (column.field === state.sortField
+                                ? state.sortOrder
+                                : "")
+                            }
+                          >
+                            <em className="fas fa-sort"></em>
+                          </span>
+                        )}
                       </div>
                     </th>
                   );

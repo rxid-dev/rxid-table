@@ -14,6 +14,26 @@
 
 .rxid-table table thead tr th.sortable div.th-content span.sort {
   display: block;
+  position: relative;
+  color: #e0e0e0;
+}
+
+.rxid-table table thead tr th.sortable div.th-content span.sort.desc::before,
+.rxid-table table thead tr th.sortable div.th-content span.sort.asc::before {
+  position: absolute;
+  left: 0;
+  color: #a0a0a0;
+  font: var(--fa-font-solid);
+}
+
+.rxid-table table thead tr th.sortable div.th-content span.sort.asc::before {
+  content: "\f0de";
+  top: 0.2em;
+}
+
+.rxid-table table thead tr th.sortable div.th-content span.sort.desc::before {
+  content: "\f0dd";
+  top: 0.2em;
 }
 
 .rxid-table table thead tr th div.th-content {
