@@ -58,7 +58,10 @@ function App() {
       {
         header: "Name",
         field: "name",
-        sortable: false,
+      },
+      {
+        header: "Username",
+        field: "username",
       },
       {
         header: "Email",
@@ -66,15 +69,13 @@ function App() {
       },
       {
         header: "Phone Number",
-        field: "phoneNumber",
-        sortable: false,
+        field: "phone",
       },
       {
-        header: "Address",
-        field: "address",
+        header: "Website",
+        field: "website",
       },
     ],
-    records: users,
   });
 
   const carModel = useTable({
@@ -142,7 +143,11 @@ function App() {
         />
         <br />
         <br />
-        <RxidTable model={model} actions={userAction} />
+        <RxidTable
+          model={model}
+          actions={userAction}
+          stringUrl="https://jsonplaceholder.typicode.com/users"
+        />
         <br />
         <br />
         <RxidTable model={carModel} />
