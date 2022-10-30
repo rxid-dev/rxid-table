@@ -1,90 +1,93 @@
-import React, { Fragment } from 'react';
-import './App.css';
-import { RxidTable, TableModel } from './rxid-table';
+import React, { Fragment } from "react";
+import "./App.css";
+import { RxidTable, useTable } from "./rxid-table";
 
 function App() {
-  const model = new TableModel([
-    {
-      header: 'Name',
-      field: 'name',
-    },
-    {
-      header: 'Email',
-      field: 'email',
-    },
-    {
-      header: 'Phone Number',
-      field: 'phoneNumber',
-    },
-    {
-      header: 'Address',
-      field: 'address',
-    },
-  ]);
-
-  const carModel = new TableModel([
-    {
-      header: 'Name',
-      field: 'name',
-    },
-    {
-      header: 'Color',
-      field: 'color',
-    },
-  ]);
-
   const users = [
     {
       id: 1,
-      name: 'John Doe',
-      email: 'johndoe@gmail.com',
-      phoneNumber: '+62 812 3456 7890',
-      address: 'Pluto',
+      name: "John Doe",
+      email: "johndoe@gmail.com",
+      phoneNumber: "+62 812 3456 7890",
+      address: "Pluto",
     },
     {
       id: 2,
-      name: 'Jane Doe',
-      email: 'jane@gmail.com',
-      phoneNumber: '+62 812 3456 6543',
-      address: 'Jupiter',
+      name: "Jane Doe",
+      email: "jane@gmail.com",
+      phoneNumber: "+62 812 3456 6543",
+      address: "Jupiter",
     },
     {
       id: 3,
-      name: 'James Smith',
-      email: 'jamessmit@gmail.com',
-      phoneNumber: '+62 812 3456 4488',
-      address: 'Earth',
+      name: "James Smith",
+      email: "jamessmit@gmail.com",
+      phoneNumber: "+62 812 3456 4488",
+      address: "Earth",
     },
   ];
 
   const cars = [
     {
       id: 1,
-      name: 'BWM',
-      color: 'Black',
+      name: "BWM",
+      color: "Black",
     },
     {
       id: 2,
-      name: 'Marzedes Benz',
-      color: 'Red',
+      name: "Marzedes Benz",
+      color: "Red",
     },
   ];
 
-  model.setRecords(users);
-  carModel.setRecords(cars);
+  const model = useTable({
+    columns: [
+      {
+        header: "Name",
+        field: "name",
+      },
+      {
+        header: "Email",
+        field: "email",
+      },
+      {
+        header: "Phone Number",
+        field: "phoneNumber",
+      },
+      {
+        header: "Address",
+        field: "address",
+      },
+    ],
+    records: users,
+  });
+
+  const carModel = useTable({
+    columns: [
+      {
+        header: "Name",
+        field: "name",
+      },
+      {
+        header: "Color",
+        field: "color",
+      },
+    ],
+    records: cars,
+  });
 
   const handleDelete = (record) => {
-    console.log('Info: Come from handleDelete');
+    console.log("Info: Come from handleDelete");
     console.log(record);
   };
 
   const handleEdit = (record) => {
-    console.log('Info: Come from handleEdit');
+    console.log("Info: Come from handleEdit");
     console.log(record);
   };
 
   const handleView = (record) => {
-    console.log('Info: Come from handleView');
+    console.log("Info: Come from handleView");
     console.log(record);
   };
 
