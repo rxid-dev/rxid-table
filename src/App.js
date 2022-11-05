@@ -52,6 +52,7 @@ function App() {
         field: "website",
       },
     ],
+    perPage: 5,
   });
 
   const carModel = useTable({
@@ -66,6 +67,8 @@ function App() {
       },
     ],
     records: cars,
+    perPage: 1,
+    totalRecord: cars.length,
   });
 
   const handleDelete = (record) => {

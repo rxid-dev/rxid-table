@@ -1,18 +1,21 @@
 import React, { useEffect, useState } from "react";
+import { RxidPagination } from "../rxid-pagination";
 import "./RxidTable.css";
-
 export const RxidTable = ({ model, stringUrl }) => {
   const [state, setState] = useState({
     records: [],
     keywords: "",
-    perPage: model.perPage,
+    perPage: model.pagination.perPage,
     sortField: "",
     sortOrder: "",
+    currentPage: 1,
   });
 
   useEffect(() => {
     if (stringUrl) {
-      let queryParams = `?&_start=${0}&_limit=${state.perPage}`;
+      let queryParams = `?&_start=${
+        (state.currentPage - 1) * state.perPage
+      }&_limit=${state.perPage}`;
 
       if (state.keywords) {
         queryParams += `&q=${state.keywords}`;
@@ -24,6 +27,8 @@ export const RxidTable = ({ model, stringUrl }) => {
 
       fetch(stringUrl + queryParams)
         .then(async (successResponse) => {
+          const totalRecord = successResponse.headers.get("X-Total-Count");
+          model.setTotalRecord(totalRecord);
           const records = await successResponse.json();
           setState((state) => ({
             ...state,
@@ -37,13 +42,22 @@ export const RxidTable = ({ model, stringUrl }) => {
       let records = Array.from(model.records);
       records = searchRecords(records);
       records = sortRecords(records);
-      records = records.splice(0, state.perPage);
+      records = records.splice(
+        (state.currentPage - 1) * state.perPage,
+        state.perPage
+      );
       setState((state) => ({
         ...state,
         records,
       }));
     }
-  }, [state.keywords, state.perPage, state.sortField, state.sortOrder]);
+  }, [
+    state.keywords,
+    state.perPage,
+    state.sortField,
+    state.sortOrder,
+    state.currentPage,
+  ]);
 
   const searchRecords = (records) => {
     if (!state.keywords) return records;
@@ -105,6 +119,13 @@ export const RxidTable = ({ model, stringUrl }) => {
     setState((state) => ({
       ...state,
       perPage,
+    }));
+  };
+
+  const handleOnChangePage = (currentPage) => {
+    setState((state) => ({
+      ...state,
+      currentPage,
     }));
   };
 
@@ -196,35 +217,10 @@ export const RxidTable = ({ model, stringUrl }) => {
             <option value={25}>25</option>
           </select>
         </div>
-        <nav aria-label="Page navigation example">
-          <ul className="pagination">
-            <li className="page-item">
-              <a className="page-link" href="#">
-                Previous
-              </a>
-            </li>
-            <li className="page-item">
-              <a className="page-link" href="#">
-                1
-              </a>
-            </li>
-            <li className="page-item">
-              <a className="page-link" href="#">
-                2
-              </a>
-            </li>
-            <li className="page-item">
-              <a className="page-link" href="#">
-                3
-              </a>
-            </li>
-            <li className="page-item">
-              <a className="page-link" href="#">
-                Next
-              </a>
-            </li>
-          </ul>
-        </nav>
+        <RxidPagination
+          model={model.pagination}
+          onChangePage={handleOnChangePage}
+        />
       </div>
     </div>
   );
