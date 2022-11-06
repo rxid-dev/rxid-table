@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { RxidPagination } from "../rxid-pagination";
+import { resolveRecord } from "./resolveRecord";
 import "./RxidTable.css";
 export const RxidTable = ({ model, stringUrl }) => {
   const [state, setState] = useState({
@@ -57,6 +58,7 @@ export const RxidTable = ({ model, stringUrl }) => {
     state.sortField,
     state.sortOrder,
     state.currentPage,
+    model.records,
   ]);
 
   const searchRecords = (records) => {
@@ -65,8 +67,8 @@ export const RxidTable = ({ model, stringUrl }) => {
       let isMatch = false;
       model.columns.forEach((column) => {
         if (isMatch) return;
-        const value = record[column.field] || "";
-        if (value.toLowerCase().includes(state.keywords)) {
+        const value = resolveRecord(record, column.field) || "";
+        if (value.toLowerCase().includes(state.keywords.toLowerCase())) {
           isMatch = true;
         }
       });
@@ -77,8 +79,8 @@ export const RxidTable = ({ model, stringUrl }) => {
   const sortRecords = (records) => {
     if (!state.sortField) return records;
     return records.sort((recordA, recordB) => {
-      const valueA = recordA[state.sortField] || "";
-      const valueB = recordB[state.sortField] || "";
+      const valueA = resolveRecord(recordA, state.sortField) || "";
+      const valueB = resolveRecord(recordB, state.sortField) || "";
       return valueA > valueB
         ? state.sortOrder === "desc"
           ? -1
@@ -133,7 +135,7 @@ export const RxidTable = ({ model, stringUrl }) => {
     if (column.component) {
       return column.component(record);
     } else {
-      return record[column.field];
+      return resolveRecord(record, column.field) || "-";
     }
   };
 

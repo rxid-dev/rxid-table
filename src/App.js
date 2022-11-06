@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useEffect } from "react";
 import "./App.css";
 import { RxidTable, useTable } from "./rxid-table";
 
@@ -63,7 +63,7 @@ function App() {
     "bg-danger",
   ];
 
-  const model = useTable({
+  const userServerModel = useTable({
     columns: [
       {
         header: "Name",
@@ -96,6 +96,84 @@ function App() {
         field: "website",
       },
       {
+        header: "City",
+        field: "address.city",
+      },
+      {
+        header: "Street",
+        field: "address.street",
+      },
+      {
+        header: "Suite",
+        field: "address.suite",
+      },
+      {
+        header: "Zip Code",
+        field: "address.zipcode",
+      },
+      {
+        header: "Aksi",
+        component: userAction,
+        sortable: false,
+        options: {
+          header: {
+            className: "mx-auto",
+          },
+        },
+      },
+    ],
+    perPage: 5,
+  });
+
+  const userClientModel = useTable({
+    columns: [
+      {
+        header: "Name",
+        field: "name",
+      },
+      {
+        header: "Username",
+        field: "username",
+        component: (record) => {
+          const background = badges[(record.id - 1) % 6];
+          return (
+            <>
+              <span className={"badge " + background}>
+                {record.username || ""}
+              </span>
+            </>
+          );
+        },
+      },
+      {
+        header: "Email",
+        field: "email",
+      },
+      {
+        header: "Phone Number",
+        field: "phone",
+      },
+      {
+        header: "Website",
+        field: "website",
+      },
+      {
+        header: "City",
+        field: "address.city",
+      },
+      {
+        header: "Street",
+        field: "address.street",
+      },
+      {
+        header: "Suite",
+        field: "address.suite",
+      },
+      {
+        header: "Zip Code",
+        field: "address.zipcode",
+      },
+      {
         header: "Aksi",
         component: userAction,
         sortable: false,
@@ -125,6 +203,16 @@ function App() {
     totalRecord: cars.length,
   });
 
+  useEffect(() => {
+    fetch("https://jsonplaceholder.typicode.com/users").then(
+      async (successRepsonse) => {
+        const result = await successRepsonse.json();
+        userClientModel.setRecords(result);
+        userClientModel.setTotalRecord(10);
+      }
+    );
+  }, []);
+
   const handleDelete = (record) => {
     console.log("Info: Come from handleDelete");
     console.log(record);
@@ -145,9 +233,11 @@ function App() {
       <div className="container py-4">
         <h1>React Table Tutorial</h1>
         <h4>Create reusable table component on react app</h4>
+        <RxidTable model={userClientModel} />
+        <br />
+        <br />
         <RxidTable
-          model={model}
-          actions={userAction}
+          model={userServerModel}
           stringUrl="https://jsonplaceholder.typicode.com/users"
         />
         <br />
