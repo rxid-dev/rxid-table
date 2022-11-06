@@ -29,6 +29,40 @@ function App() {
     ],
   });
 
+  const userAction = (record) => {
+    return (
+      <Fragment>
+        <button
+          className="btn btn-sm btn-primary"
+          onClick={() => handleView(record)}
+        >
+          <em className="fas fa-search"></em>
+        </button>
+        <button
+          className="btn btn-sm btn-warning mx-2"
+          onClick={() => handleEdit(record)}
+        >
+          <em className="fas fa-pen"></em>
+        </button>
+        <button
+          className="btn btn-sm btn-danger"
+          onClick={() => handleDelete(record)}
+        >
+          <em className="fas fa-trash"></em>
+        </button>
+      </Fragment>
+    );
+  };
+
+  const badges = [
+    "bg-primary",
+    "bg-secondary",
+    "bg-info",
+    "bg-success",
+    "bg-warning",
+    "bg-danger",
+  ];
+
   const model = useTable({
     columns: [
       {
@@ -38,6 +72,16 @@ function App() {
       {
         header: "Username",
         field: "username",
+        component: (record) => {
+          const background = badges[(record.id - 1) % 6];
+          return (
+            <>
+              <span className={"badge " + background}>
+                {record.username || ""}
+              </span>
+            </>
+          );
+        },
       },
       {
         header: "Email",
@@ -50,6 +94,16 @@ function App() {
       {
         header: "Website",
         field: "website",
+      },
+      {
+        header: "Aksi",
+        component: userAction,
+        sortable: false,
+        options: {
+          header: {
+            className: "mx-auto",
+          },
+        },
       },
     ],
     perPage: 5,
@@ -86,46 +140,21 @@ function App() {
     console.log(record);
   };
 
-  const userAction = (record) => {
-    return (
-      <Fragment>
-        <button
-          className="btn btn-sm btn-primary"
-          onClick={() => handleView(record)}
-        >
-          <em className="fas fa-search"></em>
-        </button>
-        <button
-          className="btn btn-sm btn-warning mx-2"
-          onClick={() => handleEdit(record)}
-        >
-          <em className="fas fa-pen"></em>
-        </button>
-        <button
-          className="btn btn-sm btn-danger"
-          onClick={() => handleDelete(record)}
-        >
-          <em className="fas fa-trash"></em>
-        </button>
-      </Fragment>
-    );
-  };
-
   return (
     <div className="App">
       <div className="container py-4">
         <h1>React Table Tutorial</h1>
         <h4>Create reusable table component on react app</h4>
         <RxidTable
-          model={postModel}
-          stringUrl="https://jsonplaceholder.typicode.com/posts"
+          model={model}
+          actions={userAction}
+          stringUrl="https://jsonplaceholder.typicode.com/users"
         />
         <br />
         <br />
         <RxidTable
-          model={model}
-          actions={userAction}
-          stringUrl="https://jsonplaceholder.typicode.com/users"
+          model={postModel}
+          stringUrl="https://jsonplaceholder.typicode.com/posts"
         />
         <br />
         <br />

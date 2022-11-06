@@ -129,6 +129,14 @@ export const RxidTable = ({ model, stringUrl }) => {
     }));
   };
 
+  const renderTdContent = (record, column) => {
+    if (column.component) {
+      return column.component(record);
+    } else {
+      return record[column.field];
+    }
+  };
+
   return (
     <div className="rxid-table">
       <div className="rxid-table-header">
@@ -164,7 +172,14 @@ export const RxidTable = ({ model, stringUrl }) => {
                       onClick={() => handleSort(column)}
                     >
                       <div className="th-content">
-                        <span className="th-text">{column.header}</span>
+                        <span
+                          className={
+                            "th-text " +
+                            (column.options?.header?.className || "")
+                          }
+                        >
+                          {column.header}
+                        </span>
                         {column.sortable === false ? (
                           ""
                         ) : (
@@ -189,11 +204,15 @@ export const RxidTable = ({ model, stringUrl }) => {
               {state.records.map((record, indexI) => {
                 return (
                   <tr key={indexI}>
-                    <td>{indexI + 1}</td>
+                    <td>
+                      {(state.currentPage - 1) * model.pagination.perPage +
+                        indexI +
+                        1}
+                    </td>
                     {model.columns.map((column, indexJ) => {
                       return (
                         <td key={indexI + "" + indexJ}>
-                          {record[column.field]}
+                          {renderTdContent(record, column)}
                         </td>
                       );
                     })}
