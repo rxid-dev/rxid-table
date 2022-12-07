@@ -43,6 +43,7 @@ export const RxidTable = ({ model, stringUrl }) => {
       let records = Array.from(model.records);
       records = searchRecords(records);
       records = sortRecords(records);
+      model.setTotalRecord(records.length);
       records = records.splice(
         (state.currentPage - 1) * state.perPage,
         state.perPage

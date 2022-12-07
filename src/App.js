@@ -84,6 +84,32 @@ function App() {
         },
       },
       {
+        header: "Status",
+        field: "status",
+        component: (record) => {
+          return (
+            <>
+              <span
+                className={
+                  "badge " +
+                  (record.status === 1
+                    ? "bg-success"
+                    : record.status === 2
+                    ? "bg-danger"
+                    : "bg-secondary")
+                }
+              >
+                {record.status === 1
+                  ? "Verified"
+                  : record.status === 2
+                  ? "Banned"
+                  : "Not Verified"}
+              </span>
+            </>
+          );
+        },
+      },
+      {
         header: "Email",
         field: "email",
       },
@@ -204,13 +230,10 @@ function App() {
   });
 
   useEffect(() => {
-    fetch("https://jsonplaceholder.typicode.com/users").then(
-      async (successRepsonse) => {
-        const result = await successRepsonse.json();
-        userClientModel.setRecords(result);
-        userClientModel.setTotalRecord(10);
-      }
-    );
+    fetch("http://localhost:3001/users").then(async (successRepsonse) => {
+      const result = await successRepsonse.json();
+      userClientModel.setRecords(result);
+    });
   }, []);
 
   const handleDelete = (record) => {
@@ -238,14 +261,11 @@ function App() {
         <br />
         <RxidTable
           model={userServerModel}
-          stringUrl="https://jsonplaceholder.typicode.com/users"
+          stringUrl="http://localhost:3001/users"
         />
         <br />
         <br />
-        <RxidTable
-          model={postModel}
-          stringUrl="https://jsonplaceholder.typicode.com/posts"
-        />
+        <RxidTable model={postModel} stringUrl="http://localhost:3001/posts" />
         <br />
         <br />
         <RxidTable model={carModel} />
