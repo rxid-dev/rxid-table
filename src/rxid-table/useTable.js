@@ -5,6 +5,7 @@ export const useTable = ({ columns, records, perPage, totalRecord }) => {
     columns: columns || [],
     records: records || [],
     customData: {},
+    reloadFlag: false,
   });
 
   const pagination = usePagination({ perPage, totalRecord });
@@ -27,5 +28,19 @@ export const useTable = ({ columns, records, perPage, totalRecord }) => {
     }));
   };
 
-  return { ...state, setRecords, pagination, setTotalRecord, setCustomData };
+  const reload = () => {
+    setState((state) => ({
+      ...state,
+      reloadFlag: !state.reloadFlag,
+    }));
+  };
+
+  return {
+    ...state,
+    setRecords,
+    pagination,
+    setTotalRecord,
+    setCustomData,
+    reload,
+  };
 };

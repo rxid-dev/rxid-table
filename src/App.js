@@ -251,6 +251,51 @@ function App() {
     console.log(record);
   };
 
+  const handleAddUser = () => {
+    const user = {
+      id: Math.ceil(Math.random() * 1000),
+      name: "New Data",
+      username: "newData",
+      email: "newData@april.biz",
+      address: {
+        street: "Kulas Light",
+        suite: "Apt. 556",
+        city: "Gwenborough",
+        zipcode: "92998-3874",
+        geo: {
+          lat: "-37.3159",
+          lng: "81.1496",
+        },
+      },
+      phone: "1-770-736-8031 x56442",
+      website: "hildegard.org",
+      company: {
+        name: "Romaguera-Crona",
+        catchPhrase: "Multi-layered client-server neural-net",
+        bs: "harness real-time e-markets",
+      },
+      status: 1,
+      createdAt: Date.now(),
+    };
+
+    fetch("http://localhost:3001/users", {
+      method: "POST",
+      // mode: 'cors',
+      cache: "no-cache",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      redirect: "follow",
+      referrerPolicy: "no-referrer",
+      body: JSON.stringify(user),
+    }).then((response) => {
+      console.log("INFO: I am in");
+      console.log(response);
+      userServerModel.reload();
+    });
+  };
+
   return (
     <div className="App">
       <div className="container py-4">
@@ -270,6 +315,9 @@ function App() {
             <option value={1}>Verified</option>
             <option value={2}>Banned</option>
           </select>
+          <button className="btn btn-primary mt-3" onClick={handleAddUser}>
+            Add New
+          </button>
         </div>
         <RxidTable
           model={userServerModel}

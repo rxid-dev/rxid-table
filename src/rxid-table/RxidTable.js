@@ -22,9 +22,11 @@ export const RxidTable = ({ model, stringUrl }) => {
         queryParams += `&q=${state.keywords}`;
       }
 
-      if (state.sortField) {
-        queryParams += `&_sort=${state.sortField}&_order=${state.sortOrder}`;
-      }
+      // if (state.sortField) {
+      queryParams += `&_sort=${state.sortField || "createdAt"}&_order=${
+        state.sortOrder || "desc"
+      }`;
+      // }
 
       Object.keys(model.customData).forEach((key) => {
         if (model.customData[key]) {
@@ -67,6 +69,7 @@ export const RxidTable = ({ model, stringUrl }) => {
     state.currentPage,
     model.records,
     model.customData,
+    model.reloadFlag,
   ]);
 
   const searchRecords = (records) => {
