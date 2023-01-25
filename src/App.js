@@ -255,14 +255,29 @@ function App() {
     <div className="App">
       <div className="container py-4">
         <h1>React Table Tutorial</h1>
-        <h4>Create reusable table component on react app</h4>
-        <RxidTable model={userClientModel} />
-        <br />
-        <br />
+        <h4>Create reusable table component on react app</h4>{" "}
+        <div className="mb-4 mt-3">
+          <select
+            className="form-select"
+            onChange={(e) => {
+              userServerModel.setCustomData({
+                status: e.target.value,
+              });
+            }}
+          >
+            <option value="">Pilih Status</option>
+            <option value={0}>Not Verified</option>
+            <option value={1}>Verified</option>
+            <option value={2}>Banned</option>
+          </select>
+        </div>
         <RxidTable
           model={userServerModel}
           stringUrl="http://localhost:3001/users"
         />
+        <br />
+        <br />
+        <RxidTable model={userClientModel} />
         <br />
         <br />
         <RxidTable model={postModel} stringUrl="http://localhost:3001/posts" />

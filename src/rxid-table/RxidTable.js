@@ -26,6 +26,12 @@ export const RxidTable = ({ model, stringUrl }) => {
         queryParams += `&_sort=${state.sortField}&_order=${state.sortOrder}`;
       }
 
+      Object.keys(model.customData).forEach((key) => {
+        if (model.customData[key]) {
+          queryParams += `&${key}=${model.customData[key]}`;
+        }
+      });
+
       fetch(stringUrl + queryParams)
         .then(async (successResponse) => {
           const totalRecord = successResponse.headers.get("X-Total-Count");
@@ -60,6 +66,7 @@ export const RxidTable = ({ model, stringUrl }) => {
     state.sortOrder,
     state.currentPage,
     model.records,
+    model.customData,
   ]);
 
   const searchRecords = (records) => {
