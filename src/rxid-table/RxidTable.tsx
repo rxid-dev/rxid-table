@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { RxidPagination } from "../rxid-pagination";
+import { Pagination as RxidPagination } from "../rxid-pagination";
 import { resolveRecord } from "./resolveRecord";
 import "./RxidTable.css";
-export const RxidTable = ({ model, stringUrl }) => {
-  const [state, setState] = useState({
+export const RxidTable = (props: { model: any; stringUrl?: any }) => {
+  const { model, stringUrl } = props;
+  const [state, setState] = useState<any>({
     records: [],
     keywords: "",
     perPage: model.pagination.perPage,
@@ -37,9 +38,9 @@ export const RxidTable = ({ model, stringUrl }) => {
       fetch(stringUrl + queryParams)
         .then(async (successResponse) => {
           const totalRecord = successResponse.headers.get("X-Total-Count");
-          model.setTotalRecord(totalRecord);
+          model.setTotalRecord(+(totalRecord || 0));
           const records = await successResponse.json();
-          setState((state) => ({
+          setState((state: any) => ({
             ...state,
             records,
           }));
@@ -56,7 +57,7 @@ export const RxidTable = ({ model, stringUrl }) => {
         (state.currentPage - 1) * state.perPage,
         state.perPage
       );
-      setState((state) => ({
+      setState((state: any) => ({
         ...state,
         records,
       }));
@@ -72,11 +73,11 @@ export const RxidTable = ({ model, stringUrl }) => {
     model.reloadFlag,
   ]);
 
-  const searchRecords = (records) => {
+  const searchRecords = (records: Array<any>) => {
     if (!state.keywords) return records;
     return records.filter((record) => {
       let isMatch = false;
-      model.columns.forEach((column) => {
+      model.columns.forEach((column: any) => {
         if (isMatch) return;
         const value = resolveRecord(record, column.field) || "";
         if (value.toLowerCase().includes(state.keywords.toLowerCase())) {
@@ -87,7 +88,7 @@ export const RxidTable = ({ model, stringUrl }) => {
     });
   };
 
-  const sortRecords = (records) => {
+  const sortRecords = (records: Array<any>) => {
     if (!state.sortField) return records;
     return records.sort((recordA, recordB) => {
       const valueA = resolveRecord(recordA, state.sortField) || "";
@@ -102,14 +103,14 @@ export const RxidTable = ({ model, stringUrl }) => {
     });
   };
 
-  const handleSearch = (keywords) => {
-    setState((state) => ({
+  const handleSearch = (keywords: string) => {
+    setState((state: any) => ({
       ...state,
       keywords,
     }));
   };
 
-  const handleSort = (column) => {
+  const handleSort = (column: any) => {
     if (column.sortable === false) return;
     const { field } = column;
     const sortOrder = state.sortOrder
@@ -121,28 +122,28 @@ export const RxidTable = ({ model, stringUrl }) => {
       : "asc";
 
     const sortField = sortOrder === "" ? "" : column.field;
-    setState((state) => ({
+    setState((state: any) => ({
       ...state,
       sortOrder,
       sortField,
     }));
   };
 
-  const handleChangePerPage = (perPage) => {
-    setState((state) => ({
+  const handleChangePerPage = (perPage: number) => {
+    setState((state: any) => ({
       ...state,
       perPage,
     }));
   };
 
-  const handleOnChangePage = (currentPage) => {
-    setState((state) => ({
+  const handleOnChangePage = (currentPage: number) => {
+    setState((state: any) => ({
       ...state,
       currentPage,
     }));
   };
 
-  const renderTdContent = (record, column) => {
+  const renderTdContent = (record: any, column: any) => {
     if (column.component) {
       return column.component(record);
     } else {
@@ -177,7 +178,7 @@ export const RxidTable = ({ model, stringUrl }) => {
                     <span className="th-text">No</span>
                   </div>
                 </th>
-                {model.columns.map((column, index) => {
+                {model.columns.map((column: any, index: number) => {
                   return (
                     <th
                       className={column.sortable === false ? "" : "sortable"}
@@ -214,7 +215,7 @@ export const RxidTable = ({ model, stringUrl }) => {
               </tr>
             </thead>
             <tbody>
-              {state.records.map((record, indexI) => {
+              {state.records.map((record: any, indexI: number) => {
                 return (
                   <tr key={indexI}>
                     <td>
@@ -222,7 +223,7 @@ export const RxidTable = ({ model, stringUrl }) => {
                         indexI +
                         1}
                     </td>
-                    {model.columns.map((column, indexJ) => {
+                    {model.columns.map((column: any, indexJ: number) => {
                       return (
                         <td key={indexI + "" + indexJ}>
                           {renderTdContent(record, column)}
@@ -242,7 +243,7 @@ export const RxidTable = ({ model, stringUrl }) => {
             className="form-select form-select-sm"
             aria-label="Default select example"
             value={state.perPage}
-            onChange={(event) => handleChangePerPage(event.target.value)}
+            onChange={(event) => handleChangePerPage(+event.target.value)}
           >
             <option value={5}>5</option>
             <option value={10}>10</option>

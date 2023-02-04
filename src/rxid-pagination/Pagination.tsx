@@ -1,11 +1,18 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { Pagination } from "./domain/pagination";
+import { PaginationModel } from "./models/pagination.model";
+import "./Pagination.scss";
 import { resolvePagination } from "./resolve-pagination";
-import "./RxidPagination.scss";
+interface Props {
+  model: PaginationModel;
+  onChangePage: (page: number) => void;
+}
 
-export const RxidPagination = ({ model, onChangePage }) => {
+export const PaginationComponent = (props: Props) => {
+  const { model, onChangePage } = props;
   const [state, setState] = useState({
     currentPage: model.currentPage,
-    pagination: {},
+    pagination: Pagination.createEmpty(),
     length: 0,
   });
 
@@ -23,7 +30,7 @@ export const RxidPagination = ({ model, onChangePage }) => {
     }));
   }, [model.totalRecord, state.currentPage]);
 
-  const setCurrentPage = (currentPage) => {
+  const setCurrentPage = (currentPage: number) => {
     setState((state) => ({
       ...state,
       currentPage,
@@ -33,7 +40,7 @@ export const RxidPagination = ({ model, onChangePage }) => {
     }
   };
 
-  const handleChangePage = (currentPage) => {
+  const handleChangePage = (currentPage: number) => {
     if (state.currentPage === currentPage) return;
     setCurrentPage(currentPage);
   };
@@ -88,26 +95,24 @@ export const RxidPagination = ({ model, onChangePage }) => {
       ) : (
         ""
       )}
-      {Array(state.length)
-        .fill(0)
-        .map((value, index) => {
-          const page = value + index + state.pagination.startPage;
-          return (
-            <li className="pagination-item" key={page}>
-              <a
-                className={
-                  "pagination-link " +
-                  (state.currentPage === page ? "active" : "")
-                }
-                onClick={() => handleChangePage(page)}
-              >
-                {page}
-              </a>
-            </li>
-          );
-        })}
+      {state.pagination.list.map((page) => {
+        return (
+          <li className="pagination-item" key={page}>
+            <a
+              className={
+                "pagination-link " +
+                (state.currentPage === page ? "active" : "")
+              }
+              onClick={() => handleChangePage(page)}
+            >
+              {page}
+            </a>
+          </li>
+        );
+      })}
 
-      {state.currentPage < state.pagination.lastPage - 3 ? (
+      {state.currentPage < state.pagination.lastPage - 3 &&
+      state.pagination.endPage < state.pagination.lastPage ? (
         <li className="pagination-item">
           <a className="pagination-link separator">...</a>
         </li>
@@ -115,7 +120,8 @@ export const RxidPagination = ({ model, onChangePage }) => {
         ""
       )}
 
-      {state.currentPage < state.pagination.lastPage - 2 ? (
+      {state.currentPage < state.pagination.lastPage - 2 &&
+      state.pagination.endPage < state.pagination.lastPage ? (
         <li className="pagination-item">
           <a
             className="pagination-link"

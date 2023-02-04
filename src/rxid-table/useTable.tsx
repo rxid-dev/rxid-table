@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { usePagination } from "../rxid-pagination";
-export const useTable = ({ columns, records, perPage, totalRecord }) => {
+
+interface Props {
+  columns: Array<any>;
+  records?: Array<any>;
+  perPage?: number;
+  totalRecord?: number;
+}
+
+export const useTable = (props: Props) => {
+  const { columns, records, perPage, totalRecord } = props;
   const [state, setState] = useState({
     columns: columns || [],
     records: records || [],
@@ -10,18 +19,18 @@ export const useTable = ({ columns, records, perPage, totalRecord }) => {
 
   const pagination = usePagination({ perPage, totalRecord });
 
-  const setRecords = (records) => {
+  const setRecords = (records: Array<any>) => {
     setState((state) => ({
       ...state,
       records,
     }));
   };
 
-  const setTotalRecord = (totalRecord) => {
+  const setTotalRecord = (totalRecord: number) => {
     pagination.setTotalRecord(totalRecord);
   };
 
-  const setCustomData = (customData) => {
+  const setCustomData = (customData: any) => {
     setState((state) => ({
       ...state,
       customData,
