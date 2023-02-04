@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { usePagination } from "../rxid-pagination";
+import { useRef } from "react";
 import { ColumnProps } from "./interfaces/ColumnProps";
 import { ObjectProps } from "./interfaces/ObjectProps";
 import { TableProps } from "./interfaces/TableProps";
@@ -12,47 +11,28 @@ interface Props<T> {
 }
 
 export const useTable = <T>(props: Props<T>): TableProps<T> => {
-  const { columns, records, perPage, totalRecord } = props;
-  const [state, setState] = useState({
-    columns: columns || [],
-    records: records || [],
-    customData: {},
-    reloadFlag: false,
-  });
-
-  const pagination = usePagination({ perPage, totalRecord });
+  const ref: React.MutableRefObject<any> = useRef();
 
   const setRecords = (records: Array<T>) => {
-    setState((state) => ({
-      ...state,
-      records,
-    }));
-  };
-
-  const setTotalRecord = (totalRecord: number) => {
-    pagination.setTotalRecord(totalRecord);
+    if (!ref.current) return;
+    ref.current.setRecords(records);
   };
 
   const setCustomData = (customData: ObjectProps) => {
-    setState((state) => ({
-      ...state,
-      customData,
-    }));
+    if (!ref.current) return;
+    ref.current.setCustomData(customData);
   };
 
   const reload = () => {
-    setState((state) => ({
-      ...state,
-      reloadFlag: !state.reloadFlag,
-    }));
+    if (!ref.current) return;
+    ref.current.reload();
   };
 
   return {
-    ...state,
+    ...props,
     setRecords,
-    pagination,
-    setTotalRecord,
     setCustomData,
     reload,
+    ref,
   };
 };

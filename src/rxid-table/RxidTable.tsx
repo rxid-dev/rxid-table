@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { RxidPagination } from "../rxid-pagination";
+import React, { useEffect, useImperativeHandle, useState } from "react";
+import { RxidPagination, usePagination } from "../rxid-pagination";
 import { Table } from "./domain/Table";
 import { ColumnProps } from "./interfaces/ColumnProps";
 import { ObjectProps } from "./interfaces/ObjectProps";
@@ -12,70 +12,89 @@ interface Props extends TableProps<any> {
   stringUrl?: string;
 }
 
-export const RxidTable = (props: Props) => {
+export const RxidTable = React.forwardRef((props: Props, ref: any) => {
   const { stringUrl, ...model } = props;
 
   const [state, setState] = useState<Table>(Table.create(model));
 
+  const pagination = usePagination({ perPage: props.perPage });
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      reload: () => {
+        reloadState();
+      },
+      setCustomData: (customData: ObjectProps) => {
+        state.customData = customData;
+        reloadState();
+      },
+      setRecords: (records: Array<ObjectProps>) => {
+        state.model.records = records;
+        reloadState();
+      },
+      setTotalRecord: (totalRecord: number) => {
+        pagination.setTotalRecord(totalRecord);
+        reloadState();
+      },
+    }),
+    []
+  );
+
   useEffect(() => {
+    reloadState();
+  }, [state.keywords, state.sortField, state.sortOrder, state.currentPage]);
+
+  const reloadState = () => {
     if (stringUrl) {
       let queryParams = `?&_start=${
-        (state.currentPage - 1) * state.perPage
-      }&_limit=${state.perPage}`;
+        (state.currentPage - 1) * pagination.perPage
+      }&_limit=${pagination.perPage}`;
 
       if (state.keywords) {
         queryParams += `&q=${state.keywords}`;
       }
 
-      // if (state.sortField) {
       queryParams += `&_sort=${state.sortField || "createdAt"}&_order=${
         state.sortOrder || "desc"
       }`;
-      // }
 
-      Object.keys(model.customData).forEach((key) => {
-        if (model.customData[key]) {
-          queryParams += `&${key}=${model.customData[key]}`;
-        }
-      });
+      if (state.customData) {
+        Object.keys(state.customData).forEach((key) => {
+          if (state.customData[key]) {
+            queryParams += `&${key}=${state.customData[key]}`;
+          }
+        });
+      }
 
       fetch(stringUrl + queryParams)
         .then(async (successResponse) => {
           const totalRecord = successResponse.headers.get("X-Total-Count");
-          model.setTotalRecord(+(totalRecord || 0));
-          const records = await successResponse.json();
+          pagination.setTotalRecord(+(totalRecord || 0));
+          const rows = await successResponse.json();
           setState((state: Table) => ({
             ...state,
-            records,
+            rows,
           }));
         })
         .catch((errorResponse) => {
           console.log(errorResponse);
         });
     } else {
-      let records = Array.from(model.records);
+      let records = Array.from(state.model.records || []);
       records = searchRecords(records);
       records = sortRecords(records);
-      model.setTotalRecord(records.length);
-      records = records.splice(
-        (state.currentPage - 1) * state.perPage,
-        state.perPage
+      pagination.setTotalRecord(records.length);
+      const rows = records.splice(
+        (state.currentPage - 1) * pagination.perPage,
+        pagination.perPage
       );
       setState((state: Table) => ({
         ...state,
-        records,
+        rows,
       }));
     }
-  }, [
-    state.keywords,
-    state.perPage,
-    state.sortField,
-    state.sortOrder,
-    state.currentPage,
-    model.records,
-    model.customData,
-    model.reloadFlag,
-  ]);
+  };
 
   const searchRecords = (records: Array<ObjectProps>) => {
     if (!state.keywords) return records;
@@ -222,11 +241,11 @@ export const RxidTable = (props: Props) => {
               </tr>
             </thead>
             <tbody>
-              {state.records.map((record: ObjectProps, indexI: number) => {
+              {state.rows.map((record: ObjectProps, indexI: number) => {
                 return (
                   <tr key={indexI}>
                     <td>
-                      {(state.currentPage - 1) * model.pagination.perPage +
+                      {(state.currentPage - 1) * pagination.perPage +
                         indexI +
                         1}
                     </td>
@@ -251,7 +270,7 @@ export const RxidTable = (props: Props) => {
           <select
             className="form-select form-select-sm"
             aria-label="Default select example"
-            value={state.perPage}
+            value={pagination.perPage}
             onChange={(event) => handleChangePerPage(+event.target.value)}
           >
             <option value={5}>5</option>
@@ -259,11 +278,8 @@ export const RxidTable = (props: Props) => {
             <option value={25}>25</option>
           </select>
         </div>
-        <RxidPagination
-          model={model.pagination}
-          onChangePage={handleOnChangePage}
-        />
+        <RxidPagination model={pagination} onChangePage={handleOnChangePage} />
       </div>
     </div>
   );
-};
+});
