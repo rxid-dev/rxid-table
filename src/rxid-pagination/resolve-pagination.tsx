@@ -17,7 +17,9 @@ export const resolvePagination = (props: PaginationModel): Pagination => {
       startPage < firstPage
         ? firstPage
         : startPage > lastPage - size
-        ? lastPage - size + 1
+        ? lastPage - size + 1 < firstPage
+          ? firstPage
+          : lastPage - size + 1
         : startPage,
     endPage:
       endPage > lastPage

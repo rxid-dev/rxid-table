@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Pagination } from "./domain/pagination";
 import { PaginationModel } from "./models/pagination.model";
-import "./Pagination.scss";
 import { resolvePagination } from "./resolve-pagination";
+import "./RxidPagination.scss";
 interface Props {
   model: PaginationModel;
   onChangePage: (page: number) => void;
 }
 
-export const PaginationComponent = (props: Props) => {
+export const RxidPagination = (props: Props) => {
   const { model, onChangePage } = props;
   const [state, setState] = useState({
     currentPage: model.currentPage,
@@ -112,7 +112,7 @@ export const PaginationComponent = (props: Props) => {
       })}
 
       {state.currentPage < state.pagination.lastPage - 3 &&
-      state.pagination.endPage < state.pagination.lastPage ? (
+      state.pagination.endPage + 1 < state.pagination.lastPage ? (
         <li className="pagination-item">
           <a className="pagination-link separator">...</a>
         </li>

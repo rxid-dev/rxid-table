@@ -1,2 +1,2 @@
-export { PaginationComponent as Pagination } from "./Pagination";
+export * from "./RxidPagination";
 export * from "./usePagination";

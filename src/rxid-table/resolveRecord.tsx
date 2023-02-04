@@ -1,4 +1,6 @@
-export const resolveRecord = (record: any, field: string) => {
+import { ObjectProps } from "./interfaces/ObjectProps";
+
+export const resolveRecord = (record: ObjectProps, field?: string) => {
   if (!field || !record) return null;
   const fieldSplit: Array<string> = field.split(".");
   let value = { ...record };

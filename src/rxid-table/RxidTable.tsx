@@ -1,17 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { Pagination as RxidPagination } from "../rxid-pagination";
+import { RxidPagination } from "../rxid-pagination";
+import { Table } from "./domain/Table";
+import { ColumnProps } from "./interfaces/ColumnProps";
+import { ObjectProps } from "./interfaces/ObjectProps";
+import { TableProps } from "./interfaces/TableProps";
 import { resolveRecord } from "./resolveRecord";
-import "./RxidTable.css";
-export const RxidTable = (props: { model: any; stringUrl?: any }) => {
-  const { model, stringUrl } = props;
-  const [state, setState] = useState<any>({
-    records: [],
-    keywords: "",
-    perPage: model.pagination.perPage,
-    sortField: "",
-    sortOrder: "",
-    currentPage: 1,
-  });
+import "./RxidTable.scss";
+import { SortOrderType } from "./types/SortOrderType";
+
+interface Props extends TableProps<any> {
+  stringUrl?: string;
+}
+
+export const RxidTable = (props: Props) => {
+  const { stringUrl, ...model } = props;
+
+  const [state, setState] = useState<Table>(Table.create(model));
 
   useEffect(() => {
     if (stringUrl) {
@@ -40,7 +44,7 @@ export const RxidTable = (props: { model: any; stringUrl?: any }) => {
           const totalRecord = successResponse.headers.get("X-Total-Count");
           model.setTotalRecord(+(totalRecord || 0));
           const records = await successResponse.json();
-          setState((state: any) => ({
+          setState((state: Table) => ({
             ...state,
             records,
           }));
@@ -57,7 +61,7 @@ export const RxidTable = (props: { model: any; stringUrl?: any }) => {
         (state.currentPage - 1) * state.perPage,
         state.perPage
       );
-      setState((state: any) => ({
+      setState((state: Table) => ({
         ...state,
         records,
       }));
@@ -73,11 +77,11 @@ export const RxidTable = (props: { model: any; stringUrl?: any }) => {
     model.reloadFlag,
   ]);
 
-  const searchRecords = (records: Array<any>) => {
+  const searchRecords = (records: Array<ObjectProps>) => {
     if (!state.keywords) return records;
     return records.filter((record) => {
       let isMatch = false;
-      model.columns.forEach((column: any) => {
+      model.columns.forEach((column: ColumnProps) => {
         if (isMatch) return;
         const value = resolveRecord(record, column.field) || "";
         if (value.toLowerCase().includes(state.keywords.toLowerCase())) {
@@ -88,7 +92,7 @@ export const RxidTable = (props: { model: any; stringUrl?: any }) => {
     });
   };
 
-  const sortRecords = (records: Array<any>) => {
+  const sortRecords = (records: Array<ObjectProps>) => {
     if (!state.sortField) return records;
     return records.sort((recordA, recordB) => {
       const valueA = resolveRecord(recordA, state.sortField) || "";
@@ -104,25 +108,25 @@ export const RxidTable = (props: { model: any; stringUrl?: any }) => {
   };
 
   const handleSearch = (keywords: string) => {
-    setState((state: any) => ({
+    setState((state: Table) => ({
       ...state,
       keywords,
     }));
   };
 
-  const handleSort = (column: any) => {
-    if (column.sortable === false) return;
+  const handleSort = (column: ColumnProps) => {
+    if (column.sortable === false || !column.field) return;
     const { field } = column;
-    const sortOrder = state.sortOrder
+    const sortOrder: SortOrderType = state.sortOrder
       ? field === state.sortField
         ? state.sortOrder === "asc"
           ? "desc"
-          : ""
+          : null
         : "asc"
       : "asc";
 
-    const sortField = sortOrder === "" ? "" : column.field;
-    setState((state: any) => ({
+    const sortField = sortOrder === null ? "" : column.field;
+    setState((state: Table) => ({
       ...state,
       sortOrder,
       sortField,
@@ -130,24 +134,27 @@ export const RxidTable = (props: { model: any; stringUrl?: any }) => {
   };
 
   const handleChangePerPage = (perPage: number) => {
-    setState((state: any) => ({
+    setState((state: Table) => ({
       ...state,
       perPage,
     }));
   };
 
   const handleOnChangePage = (currentPage: number) => {
-    setState((state: any) => ({
+    setState((state: Table) => ({
       ...state,
       currentPage,
     }));
   };
 
-  const renderTdContent = (record: any, column: any) => {
+  const renderTdContent = (
+    record: ObjectProps,
+    column: ColumnProps
+  ): JSX.Element => {
     if (column.component) {
       return column.component(record);
     } else {
-      return resolveRecord(record, column.field) || "-";
+      return <>{resolveRecord(record, column.field) || "-"}</>;
     }
   };
 
@@ -178,7 +185,7 @@ export const RxidTable = (props: { model: any; stringUrl?: any }) => {
                     <span className="th-text">No</span>
                   </div>
                 </th>
-                {model.columns.map((column: any, index: number) => {
+                {model.columns.map((column: ColumnProps, index: number) => {
                   return (
                     <th
                       className={column.sortable === false ? "" : "sortable"}
@@ -215,7 +222,7 @@ export const RxidTable = (props: { model: any; stringUrl?: any }) => {
               </tr>
             </thead>
             <tbody>
-              {state.records.map((record: any, indexI: number) => {
+              {state.records.map((record: ObjectProps, indexI: number) => {
                 return (
                   <tr key={indexI}>
                     <td>
@@ -223,13 +230,15 @@ export const RxidTable = (props: { model: any; stringUrl?: any }) => {
                         indexI +
                         1}
                     </td>
-                    {model.columns.map((column: any, indexJ: number) => {
-                      return (
-                        <td key={indexI + "" + indexJ}>
-                          {renderTdContent(record, column)}
-                        </td>
-                      );
-                    })}
+                    {model.columns.map(
+                      (column: ColumnProps, indexJ: number) => {
+                        return (
+                          <td key={indexI + "" + indexJ}>
+                            {renderTdContent(record, column)}
+                          </td>
+                        );
+                      }
+                    )}
                   </tr>
                 );
               })}

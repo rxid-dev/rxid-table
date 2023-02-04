@@ -16,7 +16,7 @@ function App() {
     },
   ];
 
-  const postModel = useTable({
+  const postModel = useTable<{ title: string; body: string }>({
     columns: [
       {
         header: "Judul",
@@ -320,18 +320,18 @@ function App() {
           </button>
         </div>
         <RxidTable
-          model={userServerModel}
+          {...userServerModel}
           stringUrl="http://localhost:3001/users"
         />
         <br />
         <br />
-        <RxidTable model={userClientModel} />
+        <RxidTable {...userClientModel} />
         <br />
         <br />
-        <RxidTable model={postModel} stringUrl="http://localhost:3001/posts" />
+        <RxidTable {...postModel} stringUrl="http://localhost:3001/posts" />
         <br />
         <br />
-        <RxidTable model={carModel} />
+        <RxidTable {...carModel} />
       </div>
     </div>
   );
