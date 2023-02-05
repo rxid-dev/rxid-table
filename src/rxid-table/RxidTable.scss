@@ -35,6 +35,13 @@
                 }
               }
             }
+            &.th-select {
+              div.th-content {
+                div.form-check {
+                  min-height: 0;
+                }
+              }
+            }
             div.th-content {
               display: flex;
               align-items: center;
@@ -55,6 +62,9 @@
           }
           td {
             white-space: nowrap;
+            div.form-check {
+              min-height: 0;
+            }
           }
         }
       }

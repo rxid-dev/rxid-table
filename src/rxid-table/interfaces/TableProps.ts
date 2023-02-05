@@ -1,5 +1,6 @@
 import { ColumnProps } from "./ColumnProps";
 import { ObjectProps } from "./ObjectProps";
+import { TableOptionsProps } from "./TableOptionsProps";
 
 export interface TableProps<T> {
   columns: Array<ColumnProps>;
@@ -9,4 +10,5 @@ export interface TableProps<T> {
   setCustomData: (customData: ObjectProps) => void;
   reload: () => void;
   ref: React.MutableRefObject<any>;
+  options?: TableOptionsProps;
 }

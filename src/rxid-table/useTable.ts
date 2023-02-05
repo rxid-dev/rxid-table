@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { ColumnProps } from "./interfaces/ColumnProps";
 import { ObjectProps } from "./interfaces/ObjectProps";
+import { TableOptionsProps } from "./interfaces/TableOptionsProps";
 import { TableProps } from "./interfaces/TableProps";
 
 interface Props<T> {
@@ -8,6 +9,7 @@ interface Props<T> {
   records?: Array<T>;
   perPage?: number;
   totalRecord?: number;
+  options?: TableOptionsProps;
 }
 
 export const useTable = <T>(props: Props<T>): TableProps<T> => {

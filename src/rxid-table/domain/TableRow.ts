@@ -3,6 +3,7 @@ import { TableColumn } from "./TableColumn";
 
 export class TableRow {
   public columns: Array<TableColumn>;
+  public isChecked: boolean;
   private constructor(public props: RowProps) {}
 
   public static create(props: RowProps): TableRow {

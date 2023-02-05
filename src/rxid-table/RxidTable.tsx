@@ -17,7 +17,7 @@ interface Props extends TableProps<any> {
 export const RxidTable = React.forwardRef((props: Props, ref: any) => {
   const { stringUrl, ...model } = props;
 
-  const [state, setState] = useState<Table>(Table.create(model));
+  const [state, setState] = useState<Table>(Table.create(model, stringUrl));
 
   const pagination = usePagination({ perPage: props.perPage });
 
@@ -101,9 +101,11 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
   };
 
   const createRows = (records: Array<ObjectProps>) => {
-    return (records || []).map((record) =>
-      TableRow.create({ record, columns: state.props.columns })
-    );
+    return (records || []).map((record) => {
+      const row = TableRow.create({ record, columns: state.props.columns });
+      row.isChecked = state.selectedRecord.getIsSelected(record);
+      return row;
+    });
   };
 
   const searchRecords = (records: Array<ObjectProps>) => {
@@ -176,8 +178,59 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
     }));
   };
 
+  const handleSelectRecord = (isChecked: boolean, row: TableRow) => {
+    const table = state;
+    isChecked
+      ? table.selectedRecord.add(row.props.record)
+      : table.selectedRecord.remove(row.props.record);
+    row.isChecked = isChecked;
+    setState((state) => ({
+      ...state,
+      ...table,
+    }));
+  };
+
+  const handleSelectAllRecord = (isChecked: boolean) => {
+    const table = state;
+    table.selectedRecord.isSelectAll = isChecked;
+    const records: Array<ObjectProps> = [];
+
+    if (state.isServerSide) {
+      table.rows.forEach((row) => {
+        row.isChecked = isChecked;
+        if (!isChecked) return;
+        records.push(row.props.record);
+      });
+    } else {
+      table.rows.forEach((row) => {
+        row.isChecked = isChecked;
+      });
+
+      if (isChecked) {
+        records.push(...(state.props.records || []));
+      }
+    }
+
+    isChecked
+      ? table.selectedRecord.set(records)
+      : table.selectedRecord.reset();
+
+    setState((state) => ({
+      ...state,
+      ...table,
+    }));
+  };
+
   return (
     <div className="rxid-table">
+      <button
+        className="btn btn-primary mb-2"
+        onClick={() => {
+          console.log(state.selectedRecord.records);
+        }}
+      >
+        Show Checked Record
+      </button>
       <div className="rxid-table-header">
         <div className="input-group flex-nowrap mb-2">
           <span className="input-group-text" id="addon-wrapping">
@@ -198,11 +251,29 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
           <table className="table table-striped">
             <thead>
               <tr>
-                <th>
-                  <div className="th-content">
-                    <span className="th-text">No</span>
-                  </div>
-                </th>
+                {state.props.options?.select ? (
+                  <th className="th-select">
+                    <div className="th-content">
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          checked={!!state.selectedRecord.isSelectAll}
+                          onChange={(e) =>
+                            handleSelectAllRecord(e.target.checked)
+                          }
+                        />
+                      </div>
+                    </div>
+                  </th>
+                ) : (
+                  <th>
+                    <div className="th-content">
+                      <span className="th-text">No</span>
+                    </div>
+                  </th>
+                )}
+
                 {model.columns.map((column: ColumnProps, index: number) => {
                   return (
                     <th
@@ -243,11 +314,27 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
               {state.rows.map((row: TableRow, indexI: number) => {
                 return (
                   <tr key={indexI}>
-                    <td>
-                      {(state.currentPage - 1) * pagination.perPage +
-                        indexI +
-                        1}
-                    </td>
+                    {state.props.options?.select ? (
+                      <td>
+                        <div className="form-check">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            checked={!!row.isChecked}
+                            onChange={(e) =>
+                              handleSelectRecord(e.target.checked, row)
+                            }
+                          />
+                        </div>
+                      </td>
+                    ) : (
+                      <td>
+                        {(state.currentPage - 1) * pagination.perPage +
+                          indexI +
+                          1}
+                      </td>
+                    )}
+
                     {row.columns.map((column: TableColumn, indexJ: number) => {
                       return (
                         <td key={indexI + "" + indexJ}>

@@ -149,6 +149,11 @@ function App() {
       },
     ],
     perPage: 5,
+    options: {
+      select: {
+        compareField: "id",
+      },
+    },
   });
 
   const userClientModel = useTable({
@@ -211,6 +216,11 @@ function App() {
       },
     ],
     perPage: 5,
+    options: {
+      select: {
+        compareField: "id",
+      },
+    },
   });
 
   const carModel = useTable({
