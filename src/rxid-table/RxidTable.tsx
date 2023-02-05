@@ -1,6 +1,8 @@
 import React, { useEffect, useImperativeHandle, useState } from "react";
 import { RxidPagination, usePagination } from "../rxid-pagination";
 import { Table } from "./domain/Table";
+import { TableColumn } from "./domain/TableColumn";
+import { TableRow } from "./domain/TableRow";
 import { ColumnProps } from "./interfaces/ColumnProps";
 import { ObjectProps } from "./interfaces/ObjectProps";
 import { TableProps } from "./interfaces/TableProps";
@@ -30,7 +32,7 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
         reloadState();
       },
       setRecords: (records: Array<ObjectProps>) => {
-        state.model.records = records;
+        state.props.records = records;
         reloadState();
       },
       setTotalRecord: (totalRecord: number) => {
@@ -71,7 +73,8 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
         .then(async (successResponse) => {
           const totalRecord = successResponse.headers.get("X-Total-Count");
           pagination.setTotalRecord(+(totalRecord || 0));
-          const rows = await successResponse.json();
+          const records: Array<ObjectProps> = await successResponse.json();
+          const rows = createRows(records);
           setState((state: Table) => ({
             ...state,
             rows,
@@ -81,19 +84,26 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
           console.log(errorResponse);
         });
     } else {
-      let records = Array.from(state.model.records || []);
+      let records = Array.from(state.props.records || []);
       records = searchRecords(records);
       records = sortRecords(records);
       pagination.setTotalRecord(records.length);
-      const rows = records.splice(
+      records = records.splice(
         (state.currentPage - 1) * pagination.perPage,
         pagination.perPage
       );
+      const rows = createRows(records);
       setState((state: Table) => ({
         ...state,
         rows,
       }));
     }
+  };
+
+  const createRows = (records: Array<ObjectProps>) => {
+    return (records || []).map((record) =>
+      TableRow.create({ record, columns: state.props.columns })
+    );
   };
 
   const searchRecords = (records: Array<ObjectProps>) => {
@@ -166,17 +176,6 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
     }));
   };
 
-  const renderTdContent = (
-    record: ObjectProps,
-    column: ColumnProps
-  ): JSX.Element => {
-    if (column.component) {
-      return column.component(record);
-    } else {
-      return <>{resolveRecord(record, column.field) || "-"}</>;
-    }
-  };
-
   return (
     <div className="rxid-table">
       <div className="rxid-table-header">
@@ -241,7 +240,7 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
               </tr>
             </thead>
             <tbody>
-              {state.rows.map((record: ObjectProps, indexI: number) => {
+              {state.rows.map((row: TableRow, indexI: number) => {
                 return (
                   <tr key={indexI}>
                     <td>
@@ -249,15 +248,13 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
                         indexI +
                         1}
                     </td>
-                    {model.columns.map(
-                      (column: ColumnProps, indexJ: number) => {
-                        return (
-                          <td key={indexI + "" + indexJ}>
-                            {renderTdContent(record, column)}
-                          </td>
-                        );
-                      }
-                    )}
+                    {row.columns.map((column: TableColumn, indexJ: number) => {
+                      return (
+                        <td key={indexI + "" + indexJ}>
+                          {column.value || "-"}
+                        </td>
+                      );
+                    })}
                   </tr>
                 );
               })}

@@ -1,6 +1,5 @@
 import React, { Fragment, useEffect } from "react";
 import "./App.scss";
-import { Example } from "./Example";
 import { RxidTable, useTable } from "./rxid-table";
 
 function App() {
@@ -302,7 +301,6 @@ function App() {
       <div className="container py-4">
         <h1>React Table Tutorial</h1>
         <h4>Create reusable table component on react app</h4>
-        <Example />
         <div className="mb-4 mt-3">
           <select
             className="form-select"
@@ -317,7 +315,7 @@ function App() {
             <option value={1}>Verified</option>
             <option value={2}>Banned</option>
           </select>
-          <button className="btn btn-primary mt-3" onClick={handleAddUser}>
+          <button className="btn btn-primary mt-3 me-2" onClick={handleAddUser}>
             Add New
           </button>
           <button
