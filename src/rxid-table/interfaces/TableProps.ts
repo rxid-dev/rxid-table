@@ -10,5 +10,5 @@ export interface TableProps<T> {
   setCustomData: (customData: ObjectProps) => void;
   reload: () => void;
   ref: React.MutableRefObject<any>;
-  options?: TableOptionsProps;
+  options?: TableOptionsProps<T>;
 }

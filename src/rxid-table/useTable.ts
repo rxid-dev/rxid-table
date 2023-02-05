@@ -9,7 +9,7 @@ interface Props<T> {
   records?: Array<T>;
   perPage?: number;
   totalRecord?: number;
-  options?: TableOptionsProps;
+  options?: TableOptionsProps<T>;
 }
 
 export const useTable = <T>(props: Props<T>): TableProps<T> => {

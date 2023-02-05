@@ -1,5 +1,5 @@
-export interface TableOptionsProps {
-  select?: {
-    compareField: string;
-  };
+import { TableSelectProps } from "./TableSelectProps";
+
+export interface TableOptionsProps<T> {
+  select?: TableSelectProps<T>;
 }

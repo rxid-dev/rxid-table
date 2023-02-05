@@ -1,6 +1,7 @@
 import React, { Fragment, useEffect } from "react";
 import "./App.scss";
 import { RxidTable, useTable } from "./rxid-table";
+import { selectedRecord } from "./selected-records";
 
 function App() {
   const cars = [
@@ -63,7 +64,7 @@ function App() {
     "bg-danger",
   ];
 
-  const userServerModel = useTable({
+  const userServerModel = useTable<any>({
     columns: [
       {
         header: "Name",
@@ -152,6 +153,12 @@ function App() {
     options: {
       select: {
         compareField: "id",
+        isMultiple: false,
+        onSelect: (records: Array<any>) => {
+          console.log("INFO: Come from onSelect");
+          console.log(records);
+        },
+        records: [selectedRecord[1]],
       },
     },
   });

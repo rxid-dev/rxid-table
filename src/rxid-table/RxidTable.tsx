@@ -1,4 +1,4 @@
-import React, { useEffect, useImperativeHandle, useState } from "react";
+import React, { useEffect, useImperativeHandle, useRef, useState } from "react";
 import { RxidPagination, usePagination } from "../rxid-pagination";
 import { Table } from "./domain/Table";
 import { TableColumn } from "./domain/TableColumn";
@@ -16,6 +16,8 @@ interface Props extends TableProps<any> {
 
 export const RxidTable = React.forwardRef((props: Props, ref: any) => {
   const { stringUrl, ...model } = props;
+
+  const checkboxAllRef = useRef<any>();
 
   const [state, setState] = useState<Table>(Table.create(model, stringUrl));
 
@@ -75,6 +77,7 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
           pagination.setTotalRecord(+(totalRecord || 0));
           const records: Array<ObjectProps> = await successResponse.json();
           const rows = createRows(records);
+          setIndeterminate(rows.length);
           setState((state: Table) => ({
             ...state,
             rows,
@@ -97,6 +100,14 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
         ...state,
         rows,
       }));
+    }
+  };
+
+  const setIndeterminate = (rowsLength: number) => {
+    if (state.props.options?.select && checkboxAllRef.current) {
+      checkboxAllRef.current.indeterminate =
+        state.selectedRecord.records.length !== rowsLength &&
+        state.selectedRecord.records.length > 0;
     }
   };
 
@@ -172,6 +183,10 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
   };
 
   const handleOnChangePage = (currentPage: number) => {
+    if (state.isServerSide) {
+      state.selectedRecord.reset();
+      checkboxAllRef.current.indeterminate = false;
+    }
     setState((state: Table) => ({
       ...state,
       currentPage,
@@ -180,10 +195,30 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
 
   const handleSelectRecord = (isChecked: boolean, row: TableRow) => {
     const table = state;
-    isChecked
-      ? table.selectedRecord.add(row.props.record)
-      : table.selectedRecord.remove(row.props.record);
-    row.isChecked = isChecked;
+    if (state.selectedRecord.isMultiple) {
+      isChecked
+        ? table.selectedRecord.add(row.props.record)
+        : table.selectedRecord.remove(row.props.record);
+      row.isChecked = isChecked;
+
+      const rowsLength = state.isServerSide
+        ? table.rows.length
+        : state.props.records?.length || 0;
+      setIndeterminate(rowsLength);
+
+      state.selectedRecord.isSelectAll = state.isServerSide
+        ? state.rows.length === table.selectedRecord.records.length
+        : (state.props.records?.length || 0) ===
+          table.selectedRecord.records.length;
+    } else {
+      table.rows.forEach((row) => (row.isChecked = false));
+      row.isChecked = true;
+
+      isChecked
+        ? table.selectedRecord.set([row.props.record])
+        : table.selectedRecord.reset();
+    }
+
     setState((state) => ({
       ...state,
       ...table,
@@ -254,16 +289,19 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
                 {state.props.options?.select ? (
                   <th className="th-select">
                     <div className="th-content">
-                      <div className="form-check">
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          checked={!!state.selectedRecord.isSelectAll}
-                          onChange={(e) =>
-                            handleSelectAllRecord(e.target.checked)
-                          }
-                        />
-                      </div>
+                      {state.selectedRecord.isMultiple && (
+                        <div className="form-check">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            checked={!!state.selectedRecord.isSelectAll}
+                            onChange={(e) =>
+                              handleSelectAllRecord(e.target.checked)
+                            }
+                            ref={checkboxAllRef}
+                          />
+                        </div>
+                      )}
                     </div>
                   </th>
                 ) : (
@@ -316,16 +354,30 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
                   <tr key={indexI}>
                     {state.props.options?.select ? (
                       <td>
-                        <div className="form-check">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            checked={!!row.isChecked}
-                            onChange={(e) =>
-                              handleSelectRecord(e.target.checked, row)
-                            }
-                          />
-                        </div>
+                        {state.selectedRecord.isMultiple ? (
+                          <div className="form-check">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              checked={!!row.isChecked}
+                              onChange={(e) =>
+                                handleSelectRecord(e.target.checked, row)
+                              }
+                            />
+                          </div>
+                        ) : (
+                          <div className="form-check">
+                            <input
+                              className="form-check-input"
+                              type="radio"
+                              name={state.identifer}
+                              checked={!!row.isChecked}
+                              onChange={(e) =>
+                                handleSelectRecord(e.target.checked, row)
+                              }
+                            />
+                          </div>
+                        )}
                       </td>
                     ) : (
                       <td>

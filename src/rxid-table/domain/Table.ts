@@ -13,6 +13,7 @@ export class Table {
   public customData: ObjectProps;
   public selectedRecord: TableSelect;
   public isServerSide: boolean;
+  public identifer: string;
   private constructor(public props: TableProps<ObjectProps>) {}
   public static create(
     props: TableProps<ObjectProps>,
@@ -22,9 +23,8 @@ export class Table {
     state.isServerSide = !!stringUrl;
     state.rows = [];
     state.currentPage = 1;
-    state.selectedRecord = TableSelect.create(
-      props.options?.select?.compareField
-    );
+    state.selectedRecord = TableSelect.create(props.options?.select);
+    state.identifer = `table-${Math.ceil(Math.random() * 100)}`;
     return state;
   }
 }
