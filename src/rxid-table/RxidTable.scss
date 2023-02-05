@@ -60,6 +60,9 @@
           &:hover td {
             background-color: #fafafa;
           }
+          &.clickable {
+            cursor: pointer;
+          }
           td {
             white-space: nowrap;
             div.form-check {

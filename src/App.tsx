@@ -28,6 +28,12 @@ function App() {
         field: "body",
       },
     ],
+    options: {
+      onClick: (record): void => {
+        // handle go to detail
+        console.log(record);
+      },
+    },
   });
 
   const userAction = (record: any) => {

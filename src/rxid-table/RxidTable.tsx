@@ -1,4 +1,10 @@
-import React, { useEffect, useImperativeHandle, useRef, useState } from "react";
+import React, {
+  createRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import { RxidPagination, usePagination } from "../rxid-pagination";
 import { Table } from "./domain/Table";
 import { TableColumn } from "./domain/TableColumn";
@@ -185,7 +191,9 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
   const handleOnChangePage = (currentPage: number) => {
     if (state.isServerSide) {
       state.selectedRecord.reset();
-      checkboxAllRef.current.indeterminate = false;
+      if (checkboxAllRef.current) {
+        checkboxAllRef.current.indeterminate = false;
+      }
     }
     setState((state: Table) => ({
       ...state,
@@ -254,6 +262,19 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
       ...state,
       ...table,
     }));
+  };
+
+  const handleClickRow = (
+    row: TableRow,
+    ref: React.RefObject<HTMLInputElement>
+  ) => {
+    if (state.props.options?.onClick) {
+      state.props.options.onClick(row.props.record);
+    }
+
+    if (ref.current) {
+      ref.current.click();
+    }
   };
 
   return (
@@ -350,8 +371,18 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
             </thead>
             <tbody>
               {state.rows.map((row: TableRow, indexI: number) => {
+                const selectRef = createRef<HTMLInputElement>();
                 return (
-                  <tr key={indexI}>
+                  <tr
+                    key={indexI}
+                    onClick={() => handleClickRow(row, selectRef)}
+                    className={
+                      state.props.options?.onClick ||
+                      state.props.options?.select
+                        ? "clickable"
+                        : ""
+                    }
+                  >
                     {state.props.options?.select ? (
                       <td>
                         {state.selectedRecord.isMultiple ? (
@@ -363,6 +394,7 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
                               onChange={(e) =>
                                 handleSelectRecord(e.target.checked, row)
                               }
+                              ref={selectRef}
                             />
                           </div>
                         ) : (
@@ -375,6 +407,7 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
                               onChange={(e) =>
                                 handleSelectRecord(e.target.checked, row)
                               }
+                              ref={selectRef}
                             />
                           </div>
                         )}
