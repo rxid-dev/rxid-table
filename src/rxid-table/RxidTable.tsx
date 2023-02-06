@@ -33,10 +33,18 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
     ref,
     () => ({
       reload: () => {
+        setState((state) => ({
+          ...state,
+          isProcessing: state.isServerSide,
+        }));
         reloadState();
       },
       setCustomData: (customData: ObjectProps) => {
         state.customData = customData;
+        setState((state) => ({
+          ...state,
+          isProcessing: state.isServerSide,
+        }));
         reloadState();
       },
       setRecords: (records: Array<ObjectProps>) => {
@@ -87,6 +95,8 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
           setState((state: Table) => ({
             ...state,
             rows,
+            isLoading: false,
+            isProcessing: false,
           }));
         })
         .catch((errorResponse) => {
@@ -105,6 +115,8 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
       setState((state: Table) => ({
         ...state,
         rows,
+        isLoading: false,
+        isProcessing: false,
       }));
     }
   };
@@ -159,6 +171,7 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
     setState((state: Table) => ({
       ...state,
       keywords,
+      isProcessing: true,
     }));
   };
 
@@ -178,6 +191,7 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
       ...state,
       sortOrder,
       sortField,
+      isProcessing: state.isServerSide,
     }));
   };
 
@@ -185,6 +199,7 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
     setState((state: Table) => ({
       ...state,
       perPage,
+      isProcessing: state.isServerSide,
     }));
   };
 
@@ -198,6 +213,7 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
     setState((state: Table) => ({
       ...state,
       currentPage,
+      isProcessing: state.isServerSide,
     }));
   };
 
@@ -277,178 +293,234 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
     }
   };
 
-  return (
-    <div className="rxid-table">
-      <button
-        className="btn btn-primary mb-2"
-        onClick={() => {
-          console.log(state.selectedRecord.records);
-        }}
-      >
-        Show Checked Record
-      </button>
-      <div className="rxid-table-header">
-        <div className="input-group flex-nowrap mb-2">
-          <span className="input-group-text" id="addon-wrapping">
-            <em className="fas fa-search"></em>
-          </span>
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Search..."
-            aria-label="Search..."
-            aria-describedby="addon-wrapping"
-            onChange={(e) => handleSearch(e.target.value)}
-          />
-        </div>
-      </div>
+  const renderInitLoader = (): JSX.Element => {
+    return (
       <div className="rxid-table-body">
         <div className="table-responsive">
-          <table className="table table-striped">
-            <thead>
-              <tr>
-                {state.props.options?.select ? (
-                  <th className="th-select">
-                    <div className="th-content">
-                      {state.selectedRecord.isMultiple && (
-                        <div className="form-check">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            checked={!!state.selectedRecord.isSelectAll}
-                            onChange={(e) =>
-                              handleSelectAllRecord(e.target.checked)
-                            }
-                            ref={checkboxAllRef}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </th>
-                ) : (
-                  <th>
-                    <div className="th-content">
-                      <span className="th-text">No</span>
-                    </div>
-                  </th>
-                )}
-
-                {model.columns.map((column: ColumnProps, index: number) => {
-                  return (
-                    <th
-                      className={column.sortable === false ? "" : "sortable"}
-                      key={index}
-                      onClick={() => handleSort(column)}
-                    >
-                      <div className="th-content">
-                        <span
-                          className={
-                            "th-text " +
-                            (column.options?.header?.className || "")
-                          }
-                        >
-                          {column.header}
-                        </span>
-                        {column.sortable === false ? (
-                          ""
-                        ) : (
-                          <span
-                            className={
-                              "sort " +
-                              (column.field === state.sortField
-                                ? state.sortOrder
-                                : "")
-                            }
-                          >
-                            <em className="fas fa-sort"></em>
-                          </span>
-                        )}
-                      </div>
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
+          <table className="table table-loader">
             <tbody>
-              {state.rows.map((row: TableRow, indexI: number) => {
-                const selectRef = createRef<HTMLInputElement>();
-                return (
-                  <tr
-                    key={indexI}
-                    onClick={() => handleClickRow(row, selectRef)}
-                    className={
-                      state.props.options?.onClick ||
-                      state.props.options?.select
-                        ? "clickable"
-                        : ""
-                    }
-                  >
-                    {state.props.options?.select ? (
-                      <td>
-                        {state.selectedRecord.isMultiple ? (
-                          <div className="form-check">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              checked={!!row.isChecked}
-                              onChange={(e) =>
-                                handleSelectRecord(e.target.checked, row)
-                              }
-                              ref={selectRef}
-                            />
+              {Array(pagination.perPage || 10)
+                .fill(0)
+                .map((val, indexI) => (
+                  <tr key={val + indexI + 1}>
+                    {Array(10)
+                      .fill(0)
+                      .map((val, indexJ) => (
+                        <td key={val + indexJ + 1}>
+                          <div className="td-content">
+                            <span className="skeleton-loader"></span>
                           </div>
-                        ) : (
-                          <div className="form-check">
-                            <input
-                              className="form-check-input"
-                              type="radio"
-                              name={state.identifer}
-                              checked={!!row.isChecked}
-                              onChange={(e) =>
-                                handleSelectRecord(e.target.checked, row)
-                              }
-                              ref={selectRef}
-                            />
-                          </div>
-                        )}
-                      </td>
-                    ) : (
-                      <td>
-                        {(state.currentPage - 1) * pagination.perPage +
-                          indexI +
-                          1}
-                      </td>
-                    )}
-
-                    {row.columns.map((column: TableColumn, indexJ: number) => {
-                      return (
-                        <td key={indexI + "" + indexJ}>
-                          {column.value || "-"}
                         </td>
-                      );
-                    })}
+                      ))}
                   </tr>
-                );
-              })}
+                ))}
             </tbody>
           </table>
         </div>
       </div>
-      <div className="rxid-table-footer">
-        <div className="select-max-row">
-          <select
-            className="form-select form-select-sm"
-            aria-label="Default select example"
-            value={pagination.perPage}
-            onChange={(event) => handleChangePerPage(+event.target.value)}
-          >
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={25}>25</option>
-          </select>
+    );
+  };
+
+  const renderTable = (): JSX.Element => {
+    return (
+      <>
+        <div className="rxid-table-header">
+          <div className="input-group flex-nowrap mb-2">
+            <span className="input-group-text" id="addon-wrapping">
+              <em className="fas fa-search"></em>
+            </span>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Search..."
+              aria-label="Search..."
+              aria-describedby="addon-wrapping"
+              onChange={(e) => handleSearch(e.target.value)}
+            />
+          </div>
         </div>
-        <RxidPagination model={pagination} onChangePage={handleOnChangePage} />
-      </div>
+        <div className="rxid-table-body">
+          <div className="table-responsive">
+            <table
+              className={
+                "table " +
+                (state.isProcessing ? "table-loader" : "table-striped")
+              }
+            >
+              <thead>
+                <tr>
+                  {state.props.options?.select ? (
+                    <th className="th-select">
+                      <div className="th-content">
+                        {state.selectedRecord.isMultiple && (
+                          <div className="form-check">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              checked={!!state.selectedRecord.isSelectAll}
+                              onChange={(e) =>
+                                handleSelectAllRecord(e.target.checked)
+                              }
+                              ref={checkboxAllRef}
+                              disabled={state.isProcessing}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </th>
+                  ) : (
+                    <th>
+                      <div className="th-content">
+                        <span className="th-text">No</span>
+                      </div>
+                    </th>
+                  )}
+
+                  {model.columns.map((column: ColumnProps, index: number) => {
+                    return (
+                      <th
+                        className={column.sortable === false ? "" : "sortable"}
+                        key={index}
+                        onClick={() => handleSort(column)}
+                      >
+                        <div className="th-content">
+                          <span
+                            className={
+                              "th-text " +
+                              (column.options?.header?.className || "")
+                            }
+                          >
+                            {column.header}
+                          </span>
+                          {column.sortable === false ? (
+                            ""
+                          ) : (
+                            <span
+                              className={
+                                "sort " +
+                                (column.field === state.sortField
+                                  ? state.sortOrder
+                                  : "")
+                              }
+                            >
+                              <em className="fas fa-sort"></em>
+                            </span>
+                          )}
+                        </div>
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                {state.rows.map((row: TableRow, indexI: number) => {
+                  const selectRef = createRef<HTMLInputElement>();
+                  return (
+                    <tr
+                      key={indexI}
+                      onClick={() => handleClickRow(row, selectRef)}
+                      className={
+                        state.props.options?.onClick ||
+                        state.props.options?.select
+                          ? "clickable"
+                          : ""
+                      }
+                    >
+                      {state.props.options?.select ? (
+                        <td>
+                          {state.isProcessing ? (
+                            <span className="skeleton-loader"></span>
+                          ) : (
+                            <>
+                              {state.selectedRecord.isMultiple ? (
+                                <div className="form-check">
+                                  <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    checked={!!row.isChecked}
+                                    onChange={(e) =>
+                                      handleSelectRecord(e.target.checked, row)
+                                    }
+                                    ref={selectRef}
+                                  />
+                                </div>
+                              ) : (
+                                <div className="form-check">
+                                  <input
+                                    className="form-check-input"
+                                    type="radio"
+                                    name={state.identifer}
+                                    checked={!!row.isChecked}
+                                    onChange={(e) =>
+                                      handleSelectRecord(e.target.checked, row)
+                                    }
+                                    ref={selectRef}
+                                  />
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </td>
+                      ) : (
+                        <td>
+                          {state.isProcessing ? (
+                            <span className="skeleton-loader"></span>
+                          ) : (
+                            <>
+                              {" "}
+                              {(state.currentPage - 1) * pagination.perPage +
+                                indexI +
+                                1}
+                            </>
+                          )}
+                        </td>
+                      )}
+
+                      {row.columns.map(
+                        (column: TableColumn, indexJ: number) => {
+                          return (
+                            <td key={indexI + "" + indexJ}>
+                              {state.isProcessing ? (
+                                <span className="skeleton-loader"></span>
+                              ) : (
+                                <>{column.value || "-"}</>
+                              )}
+                            </td>
+                          );
+                        }
+                      )}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div className="rxid-table-footer">
+          <div className="select-max-row">
+            <select
+              className="form-select form-select-sm"
+              aria-label="Default select example"
+              value={pagination.perPage}
+              onChange={(event) => handleChangePerPage(+event.target.value)}
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+            </select>
+          </div>
+          <RxidPagination
+            model={pagination}
+            onChangePage={handleOnChangePage}
+          />
+        </div>
+      </>
+    );
+  };
+
+  return (
+    <div className="rxid-table">
+      {state.isLoading ? renderInitLoader() : renderTable()}
     </div>
   );
 });

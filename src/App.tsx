@@ -1,7 +1,6 @@
 import React, { Fragment, useEffect } from "react";
 import "./App.scss";
 import { RxidTable, useTable } from "./rxid-table";
-import { selectedRecord } from "./selected-records";
 
 function App() {
   const cars = [
@@ -158,13 +157,9 @@ function App() {
     perPage: 5,
     options: {
       select: {
-        compareField: "id",
-        isMultiple: false,
-        onSelect: (records: Array<any>) => {
-          console.log("INFO: Come from onSelect");
+        onSelect: (records): void => {
           console.log(records);
         },
-        records: [selectedRecord[1]],
       },
     },
   });
@@ -229,11 +224,6 @@ function App() {
       },
     ],
     perPage: 5,
-    options: {
-      select: {
-        compareField: "id",
-      },
-    },
   });
 
   const carModel = useTable({

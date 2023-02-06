@@ -1,6 +1,36 @@
 .rxid-table {
   div.rxid-table-body {
     table {
+      &.table-loader {
+        tbody {
+          tr {
+            &:hover td {
+              background-color: transparent;
+            }
+            td {
+              border: none;
+              span.skeleton-loader {
+                height: 22px;
+                background-color: #fafafa;
+                width: 100%;
+                display: block;
+                position: relative;
+                overflow: hidden;
+                &::before {
+                  content: "";
+                  position: absolute;
+                  top: 0;
+                  bottom: 0;
+                  left: 0;
+                  width: 100%;
+                  background-color: #f7f7f7;
+                  animation: tableSkeletonLoader 2s forwards infinite;
+                }
+              }
+            }
+          }
+        }
+      }
       thead {
         color: #939393;
         tr {
@@ -68,6 +98,12 @@
             div.form-check {
               min-height: 0;
             }
+            span.skeleton-loader {
+              height: 22px;
+              background-color: #fafafa;
+              width: 100%;
+              display: block;
+            }
           }
         }
       }
@@ -79,5 +115,14 @@
     .select-max-row {
       width: 64px;
     }
+  }
+}
+
+@keyframes tableSkeletonLoader {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
   }
 }

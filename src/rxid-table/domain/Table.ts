@@ -14,6 +14,8 @@ export class Table {
   public selectedRecord: TableSelect;
   public isServerSide: boolean;
   public identifer: string;
+  public isLoading: boolean;
+  public isProcessing: boolean;
   private constructor(public props: TableProps<ObjectProps>) {}
   public static create(
     props: TableProps<ObjectProps>,
@@ -25,6 +27,7 @@ export class Table {
     state.currentPage = 1;
     state.selectedRecord = TableSelect.create(props.options?.select);
     state.identifer = `table-${Math.ceil(Math.random() * 100)}`;
+    state.isLoading = true;
     return state;
   }
 }
