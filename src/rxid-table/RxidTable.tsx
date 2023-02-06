@@ -40,12 +40,11 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
         reloadState();
       },
       setCustomData: (customData: ObjectProps) => {
-        state.customData = customData;
         setState((state) => ({
           ...state,
+          customData,
           isProcessing: state.isServerSide,
         }));
-        reloadState();
       },
       setRecords: (records: Array<ObjectProps>) => {
         state.props.records = records;
@@ -61,7 +60,13 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
 
   useEffect(() => {
     reloadState();
-  }, [state.keywords, state.sortField, state.sortOrder, state.currentPage]);
+  }, [
+    state.keywords,
+    state.sortField,
+    state.sortOrder,
+    state.currentPage,
+    state.customData,
+  ]);
 
   const reloadState = () => {
     if (stringUrl) {
@@ -321,6 +326,60 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
     );
   };
 
+  const renderInitEmpty = (): JSX.Element => {
+    return (
+      <div className="empty-wrapper">
+        <h2>
+          <img src="/assets/img/empty-box.png" alt="empty" width={64} />
+        </h2>
+        {state.props.options?.empty?.init ? (
+          state.props.options?.empty?.init()
+        ) : (
+          <p className="text-secondary">
+            Belum ada data yang tersedia. <br /> Silahkan tambah data baru atau
+            kembali beberapa saat lagi.
+          </p>
+        )}
+      </div>
+    );
+  };
+
+  const renderEmptySearch = (): JSX.Element => {
+    return (
+      <div className="empty-wrapper">
+        <h2>
+          <img src="/assets/img/empty-folder.png" alt="empty" width={64} />
+        </h2>
+        {state.props.options?.empty?.search ? (
+          state.props.options?.empty?.search()
+        ) : (
+          <p className="text-secondary">
+            Data tidak ditemukan untuk kata pencarian: "{state.keywords}"
+          </p>
+        )}
+      </div>
+    );
+  };
+
+  const renderEmptyFilter = (): JSX.Element => {
+    return (
+      <div className="empty-wrapper">
+        <h2>
+          <img src="/assets/img/empty-filter.png" alt="empty" width={64} />
+        </h2>
+
+        {state.props.options?.empty?.filter ? (
+          state.props.options?.empty?.filter()
+        ) : (
+          <p className="text-secondary">
+            Hasil filter tidak menemukan data apapun. <br /> Gunakan data filter
+            yang lain.
+          </p>
+        )}
+      </div>
+    );
+  };
+
   const renderTable = (): JSX.Element => {
     return (
       <>
@@ -362,7 +421,9 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
                                 handleSelectAllRecord(e.target.checked)
                               }
                               ref={checkboxAllRef}
-                              disabled={state.isProcessing}
+                              disabled={
+                                state.isProcessing || state.rows.length === 0
+                              }
                             />
                           </div>
                         )}
@@ -492,35 +553,52 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
                     </tr>
                   );
                 })}
+                {state.rows.length === 0 && (
+                  <tr className="tr-not-found">
+                    <td colSpan={999}>
+                      {state.keywords
+                        ? renderEmptySearch()
+                        : renderEmptyFilter()}
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
         </div>
-        <div className="rxid-table-footer">
-          <div className="select-max-row">
-            <select
-              className="form-select form-select-sm"
-              aria-label="Default select example"
-              value={pagination.perPage}
-              onChange={(event) => handleChangePerPage(+event.target.value)}
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={25}>25</option>
-            </select>
+        {state.rows.length > 0 && (
+          <div className="rxid-table-footer">
+            <div className="select-max-row">
+              <select
+                className="form-select form-select-sm"
+                aria-label="Default select example"
+                value={pagination.perPage}
+                onChange={(event) => handleChangePerPage(+event.target.value)}
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+              </select>
+            </div>
+            <RxidPagination
+              model={pagination}
+              onChangePage={handleOnChangePage}
+            />
           </div>
-          <RxidPagination
-            model={pagination}
-            onChangePage={handleOnChangePage}
-          />
-        </div>
+        )}
       </>
     );
   };
 
   return (
     <div className="rxid-table">
-      {state.isLoading ? renderInitLoader() : renderTable()}
+      {state.isLoading
+        ? renderInitLoader()
+        : !state.keywords &&
+          (!state.customData || Object.keys(state.customData).length === 0) &&
+          state.rows.length === 0
+        ? renderInitEmpty()
+        : renderTable()}
     </div>
   );
 });

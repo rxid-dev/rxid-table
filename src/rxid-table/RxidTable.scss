@@ -90,6 +90,21 @@
           &:hover td {
             background-color: #fafafa;
           }
+          &:last-child {
+            td {
+              border-bottom: none;
+            }
+          }
+          &.tr-not-found {
+            td {
+              --bs-table-accent-bg: transparent;
+            }
+            &:hover {
+              td {
+                background-color: transparent;
+              }
+            }
+          }
           &.clickable {
             cursor: pointer;
           }
@@ -114,6 +129,17 @@
     justify-content: space-between;
     .select-max-row {
       width: 64px;
+    }
+  }
+
+  div.empty-wrapper {
+    text-align: center;
+    padding: 4em 1em;
+
+    p {
+      margin: 0;
+      padding: 0;
+      color: var(--bs-secondary);
     }
   }
 }

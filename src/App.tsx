@@ -161,6 +161,25 @@ function App() {
           console.log(records);
         },
       },
+      empty: {
+        init: (): JSX.Element => {
+          return (
+            <p className="text-secondary">
+              Belum ada data pengguna yang tersedia. <br />
+              Silahkan tambah data pengguna baru atau kembali beberapa saat
+              lagi.
+            </p>
+          );
+        },
+        filter: (): JSX.Element => {
+          return (
+            <p className="text-secondary">
+              Hasil filter status pengguna tidak menemukan data apapun. <br />{" "}
+              Gunakan data filter status yang lain.
+            </p>
+          );
+        },
+      },
     },
   });
 
@@ -318,15 +337,20 @@ function App() {
           <select
             className="form-select"
             onChange={(e) => {
-              userServerModel.setCustomData({
-                status: e.target.value,
-              });
+              userServerModel.setCustomData(
+                e.target.value
+                  ? {
+                      status: e.target.value,
+                    }
+                  : {}
+              );
             }}
           >
             <option value="">Pilih Status</option>
             <option value={0}>Not Verified</option>
             <option value={1}>Verified</option>
             <option value={2}>Banned</option>
+            <option value={3}>Empty Filter</option>
           </select>
           <button className="btn btn-primary mt-3 me-2" onClick={handleAddUser}>
             Add New
