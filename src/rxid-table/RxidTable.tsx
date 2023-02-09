@@ -29,10 +29,13 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
 
   const pagination = usePagination({ perPage: props.perPage });
 
+  const controller = new AbortController();
+
   useImperativeHandle(
     ref,
     () => ({
       reload: () => {
+        pagination.setCurrentPage(1);
         setState((state) => ({
           ...state,
           isProcessing: state.isServerSide,
@@ -40,6 +43,7 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
         reloadState();
       },
       setCustomData: (customData: ObjectProps) => {
+        pagination.setCurrentPage(1);
         setState((state) => ({
           ...state,
           customData,
@@ -52,6 +56,7 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
       },
       setTotalRecord: (totalRecord: number) => {
         pagination.setTotalRecord(totalRecord);
+        pagination.setCurrentPage(1);
         reloadState();
       },
     }),
@@ -60,18 +65,22 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
 
   useEffect(() => {
     reloadState();
+    return () => {
+      controller.abort();
+    };
   }, [
     state.keywords,
     state.sortField,
     state.sortOrder,
-    state.currentPage,
+    pagination.currentPage,
     state.customData,
+    pagination.perPage,
   ]);
 
   const reloadState = () => {
     if (stringUrl) {
       let queryParams = `?&_start=${
-        (state.currentPage - 1) * pagination.perPage
+        (pagination.currentPage - 1) * pagination.perPage
       }&_limit=${pagination.perPage}`;
 
       if (state.keywords) {
@@ -90,11 +99,13 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
         });
       }
 
-      fetch(stringUrl + queryParams)
+      fetch(stringUrl + queryParams, { signal: controller.signal })
         .then(async (successResponse) => {
           const totalRecord = successResponse.headers.get("X-Total-Count");
           pagination.setTotalRecord(+(totalRecord || 0));
-          const records: Array<ObjectProps> = await successResponse.json();
+          const records: Array<ObjectProps> = successResponse.ok
+            ? await successResponse.json()
+            : [];
           const rows = createRows(records);
           setIndeterminate(rows.length);
           setState((state: Table) => ({
@@ -106,6 +117,12 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
         })
         .catch((errorResponse) => {
           console.log(errorResponse);
+          setState((state: Table) => ({
+            ...state,
+            rows: [],
+            isLoading: false,
+            isProcessing: false,
+          }));
         });
     } else {
       let records = Array.from(state.props.records || []);
@@ -113,7 +130,7 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
       records = sortRecords(records);
       pagination.setTotalRecord(records.length);
       records = records.splice(
-        (state.currentPage - 1) * pagination.perPage,
+        (pagination.currentPage - 1) * pagination.perPage,
         pagination.perPage
       );
       const rows = createRows(records);
@@ -173,6 +190,7 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
   };
 
   const handleSearch = (keywords: string) => {
+    pagination.setCurrentPage(1);
     setState((state: Table) => ({
       ...state,
       keywords,
@@ -201,9 +219,9 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
   };
 
   const handleChangePerPage = (perPage: number) => {
+    pagination.setPerPage(perPage);
     setState((state: Table) => ({
       ...state,
-      perPage,
       isProcessing: state.isServerSide,
     }));
   };
@@ -488,7 +506,11 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
                       }
                     >
                       {state.props.options?.select ? (
-                        <td>
+                        <td
+                          onClick={(e) => {
+                            e.stopPropagation();
+                          }}
+                        >
                           {state.isProcessing ? (
                             <span className="skeleton-loader"></span>
                           ) : (
@@ -529,7 +551,8 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
                           ) : (
                             <>
                               {" "}
-                              {(state.currentPage - 1) * pagination.perPage +
+                              {(pagination.currentPage - 1) *
+                                pagination.perPage +
                                 indexI +
                                 1}
                             </>
@@ -580,10 +603,7 @@ export const RxidTable = React.forwardRef((props: Props, ref: any) => {
                 <option value={25}>25</option>
               </select>
             </div>
-            <RxidPagination
-              model={pagination}
-              onChangePage={handleOnChangePage}
-            />
+            <RxidPagination {...pagination} onChangePage={handleOnChangePage} />
           </div>
         )}
       </>

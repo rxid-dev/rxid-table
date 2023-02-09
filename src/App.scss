@@ -1,0 +1,21 @@
+ul.menu-list {
+  margin: 0 0 1em;
+  padding: 0;
+  li {
+    list-style: none;
+    display: inline-block;
+    a {
+      text-decoration: none;
+      padding: 0.2em 1em;
+      background-color: #f0f0f0;
+      display: block;
+      margin-right: 0.4em;
+      border-radius: 0.2em;
+      color: initial;
+      &.active {
+        background-color: var(--bs-primary);
+        color: #fff;
+      }
+    }
+  }
+}

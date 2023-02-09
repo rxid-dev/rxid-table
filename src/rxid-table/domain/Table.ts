@@ -9,7 +9,6 @@ export class Table {
   public keywords: string;
   public sortField: string;
   public sortOrder: SortOrderType;
-  public currentPage: number;
   public customData: ObjectProps;
   public selectedRecord: TableSelect;
   public isServerSide: boolean;
@@ -24,7 +23,6 @@ export class Table {
     const state = new Table(props);
     state.isServerSide = !!stringUrl;
     state.rows = [];
-    state.currentPage = 1;
     state.selectedRecord = TableSelect.create(props.options?.select);
     state.identifer = `table-${Math.ceil(Math.random() * 100)}`;
     state.isLoading = true;

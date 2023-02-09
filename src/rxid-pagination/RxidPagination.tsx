@@ -1,40 +1,31 @@
 import React, { useEffect, useState } from "react";
-import { Pagination } from "./domain/pagination";
-import { PaginationModel } from "./models/pagination.model";
+import { Pagination } from "./domain/Pagination";
+import { PaginationProps } from "./interfaces/PaginationProps";
 import { resolvePagination } from "./resolve-pagination";
 import "./RxidPagination.scss";
-interface Props {
-  model: PaginationModel;
-  onChangePage: (page: number) => void;
+interface Props extends PaginationProps {
+  onChangePage?: (page: number) => void;
 }
 
 export const RxidPagination = (props: Props) => {
-  const { model, onChangePage } = props;
-  const [state, setState] = useState({
-    currentPage: model.currentPage,
-    pagination: Pagination.createEmpty(),
-    length: 0,
-  });
+  const { onChangePage, ...model } = props;
+
+  const [state, setState] = useState(Pagination.createEmpty());
 
   useEffect(() => {
-    const pagination = resolvePagination({
-      perPage: model.perPage,
-      totalRecord: model.totalRecord,
-      currentPage: state.currentPage,
-      size: model.size,
-    });
+    reloadState();
+  }, [model.totalRecord, model.currentPage, model.perPage]);
+
+  const reloadState = () => {
+    const pagination = resolvePagination(props);
     setState((state) => ({
       ...state,
-      pagination,
-      length: pagination.endPage - (pagination.startPage - 1),
+      ...pagination,
     }));
-  }, [model.totalRecord, state.currentPage]);
+  };
 
   const setCurrentPage = (currentPage: number) => {
-    setState((state) => ({
-      ...state,
-      currentPage,
-    }));
+    props.setCurrentPage(currentPage);
     if (onChangePage) {
       onChangePage(currentPage);
     }
@@ -47,13 +38,13 @@ export const RxidPagination = (props: Props) => {
 
   const handleBackPage = () => {
     const currentPage = state.currentPage - 1;
-    if (currentPage < state.pagination.firstPage) return;
+    if (currentPage < state.firstPage) return;
     setCurrentPage(currentPage);
   };
 
   const handleNextPage = () => {
     const currentPage = state.currentPage + 1;
-    if (currentPage > state.pagination.lastPage) return;
+    if (currentPage > state.lastPage) return;
     setCurrentPage(currentPage);
   };
 
@@ -79,23 +70,23 @@ export const RxidPagination = (props: Props) => {
           <em className="fas fa-chevron-left" />
         </a>
       </li>
-      {state.pagination.startPage > 1 ? (
+      {state.startPage > 1 ? (
         <li className="pagination-item">
           <a className="pagination-link" onClick={() => handleChangePage(1)}>
             1
           </a>
         </li>
       ) : (
-        ""
+        <></>
       )}
-      {state.pagination.startPage > 2 ? (
+      {state.startPage > 2 ? (
         <li className="pagination-item">
           <a className="pagination-link separator">...</a>
         </li>
       ) : (
-        ""
+        <></>
       )}
-      {state.pagination.list.map((page) => {
+      {state.list.map((page) => {
         return (
           <li className="pagination-item" key={page}>
             <a
@@ -111,34 +102,34 @@ export const RxidPagination = (props: Props) => {
         );
       })}
 
-      {state.currentPage < state.pagination.lastPage - 3 &&
-      state.pagination.endPage + 1 < state.pagination.lastPage ? (
+      {state.currentPage < state.lastPage - 3 &&
+      state.endPage + 1 < state.lastPage ? (
         <li className="pagination-item">
           <a className="pagination-link separator">...</a>
         </li>
       ) : (
-        ""
+        <></>
       )}
 
-      {state.currentPage < state.pagination.lastPage - 2 &&
-      state.pagination.endPage < state.pagination.lastPage ? (
+      {state.currentPage < state.lastPage - 2 &&
+      state.endPage < state.lastPage ? (
         <li className="pagination-item">
           <a
             className="pagination-link"
-            onClick={() => handleChangePage(state.pagination.lastPage)}
+            onClick={() => handleChangePage(state.lastPage)}
           >
-            {state.pagination.lastPage}
+            {state.lastPage}
           </a>
         </li>
       ) : (
-        ""
+        <></>
       )}
 
       <li className="pagination-item">
         <a
           className={
             "pagination-link " +
-            (state.currentPage === state.pagination.lastPage ? "disabled" : "")
+            (state.currentPage === state.lastPage ? "disabled" : "")
           }
           onClick={handleNextPage}
         >
@@ -150,9 +141,9 @@ export const RxidPagination = (props: Props) => {
         <a
           className={
             "pagination-link " +
-            (state.currentPage === state.pagination.lastPage ? "disabled" : "")
+            (state.currentPage === state.lastPage ? "disabled" : "")
           }
-          onClick={() => handleChangePage(state.pagination.lastPage)}
+          onClick={() => handleChangePage(state.lastPage)}
         >
           <em className="fa-solid fa-angles-right" />
         </a>
